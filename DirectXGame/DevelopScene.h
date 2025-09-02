@@ -1,5 +1,6 @@
 #pragma once
 #include "IScene.h"
+#include "KamataEngine.h"
 class DevelopScene : public IScene {
 public:
 	~DevelopScene();						//解放処理
@@ -10,4 +11,7 @@ public:
 	void DrawModel() override;				//モデルの描画処理
 
 private:
+	KamataEngine::WorldTransform worldTransform_;//ワールド行列
+	KamataEngine::Camera* mainCamera_;//メインカメラ
+	KamataEngine::Model* testModel_;//確認用モデル
 };

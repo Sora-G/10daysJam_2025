@@ -1,5 +1,7 @@
 #include "DevelopScene.h"
 
+using namespace KamataEngine;
+
 DevelopScene::~DevelopScene() {}
 
 void DevelopScene::Init() {}
