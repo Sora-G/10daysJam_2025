@@ -8,6 +8,9 @@ SceneManager::SceneManager() {
 	//sceneArr_[n] = std::make_unique<シーンのクラス名>();
 	//追加する時はヘッダーで宣言した"sceneArr_"の[]の数値を増やすこと
 
+	sceneArr_[0] = std::make_unique<DevelopScene>();
+	sceneArr_[1] = std::make_unique<TitleScene>();
+
 	// 初期シーンの設定
 	currentSceneNo_ = DEVELOP;
 }
