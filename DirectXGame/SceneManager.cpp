@@ -5,7 +5,7 @@ using namespace KamataEngine;
 SceneManager::SceneManager() {
 	//各シーンの配列
 	//配列にシーンを追加する方法は ↓ に書いてあるコードを書く
-	//sceneArr_[n] = std::make_unique<シーン名>();
+	//sceneArr_[n] = std::make_unique<シーンのクラス名>();
 	//追加する時はヘッダーで宣言した"sceneArr_"の[]の数値を増やすこと
 
 	// 初期シーンの設定
