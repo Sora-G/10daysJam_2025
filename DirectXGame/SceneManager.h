@@ -1,6 +1,5 @@
 #pragma once
 #include <memory>
-#include "KamataEngine.h"
 #include "IScene.h"
 #include "DevelopScene.h"
 #include "TitleScene.h"

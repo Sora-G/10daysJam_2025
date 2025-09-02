@@ -1,4 +1,5 @@
 #include "SceneManager.h"
+#include "KamataEngine.h"
 
 using namespace KamataEngine;
 
