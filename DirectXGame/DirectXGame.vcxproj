@@ -156,6 +156,7 @@
   <ItemGroup>
     <ClCompile Include="IScene.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="SceneManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\shaders\TerrainPS.hlsl">
@@ -256,6 +257,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="IScene.h" />
+    <ClInclude Include="SceneManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
