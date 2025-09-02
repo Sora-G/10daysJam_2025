@@ -1,0 +1,28 @@
+#pragma once
+#include "KamataEngine.h"
+
+// シーン名を列挙型(enum)で定義
+enum SCENE {
+	DEVELOP,//開発用シーン(機能追加等を行う)
+	TITLE,//タイトルシーン
+};
+
+// シーン内の処理を行う基底クラス
+class IScene {
+protected:
+	// シーン番号を管理する変数
+	static int sceneNo_;
+
+public:
+	// 継承先で実装される関数
+	// 抽象クラスなので純粋仮想関数とする
+	virtual void Init() = 0;   // 初期化処理
+	virtual void Update() = 0; // 更新処理
+	virtual void Draw() = 0;   // 描画処理
+
+	// 仮想デストラクタ　※これが無いとエラーが出る
+	virtual ~IScene();
+
+	// シーン番号のgetter
+	int GetSceneNo();
+};
