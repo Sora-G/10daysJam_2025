@@ -6,6 +6,7 @@ using namespace KamataEngine;
 TestScene::~TestScene() { 
 	delete testModel_; 
 	delete player_;
+	delete skydome_;
 }
 
 void TestScene::Init() {
@@ -15,14 +16,17 @@ void TestScene::Init() {
 
 	//worldTransform_.Initialize();
 
-	camera_.translation_ = {0.0f, 20.0f, 0.0f};
-	camera_.rotation_ = {1.57f, 0.0f, 0.0f};
+	camera_.translation_ = {0.0f, 0.0f, 0.0f};
+	camera_.rotation_ = {0.0f, 0.0f, 0.0f};
 	camera_.Initialize();
 
 	testModel_ = Model::CreateSphere();
 
 	player_ = new Player();
 	player_->Init();
+
+	skydome_ = new Skydome();
+	skydome_->Initialize();
 }
 
 void TestScene::Update() {
@@ -34,10 +38,13 @@ void TestScene::Update() {
 
 	player_->Update();
 
+	skydome_->Update();
+
 	imguiManager_->End();
 }
 
 void TestScene::Draw() { 
 	player_->Draw(camera_);
+	skydome_->Draw(camera_);
 	imguiManager_->Draw();
 }
