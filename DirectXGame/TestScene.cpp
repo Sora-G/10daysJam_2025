@@ -1,6 +1,11 @@
 #include "TestScene.h"
 
-TestScene::~TestScene() {}
+using namespace KamataEngine;
+
+TestScene::~TestScene() { 
+	delete testModel_; 
+	delete player_;
+}
 
 void TestScene::Init() {
 	//
@@ -8,6 +13,11 @@ void TestScene::Init() {
 
 	camera_.translation_ = {0.0f, 0.0f, -10.0f};
 	camera_.Initialize();
+
+	testModel_ = Model::CreateSphere();
+
+	player_ = new Player();
+	player_->Init();
 }
 
 void TestScene::Update() {
@@ -16,6 +26,8 @@ void TestScene::Update() {
 
 	camera_.UpdateMatrix();
 	camera_.TransferMatrix();
+
+	player_->Update();
 }
 
-void TestScene::Draw() {}
+void TestScene::Draw() { player_->Draw(camera_); }

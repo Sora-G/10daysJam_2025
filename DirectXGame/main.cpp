@@ -22,9 +22,11 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		testScene->Update();
 
 		dxCommon->PreDraw();
+		Model::PreDraw();
 
 		testScene->Draw();
 
+		Model::PostDraw();
 		dxCommon->PostDraw();
 	}
 	KamataEngine::Finalize();

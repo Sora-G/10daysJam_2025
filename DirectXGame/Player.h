@@ -5,7 +5,7 @@ public:
 	~Player();
 	void Init();
 	void Update();
-	void Draw(KamataEngine::Camera camera);
+	void Draw(KamataEngine::Camera& camera);
 
 private:
 	KamataEngine::WorldTransform worldTransform_;
