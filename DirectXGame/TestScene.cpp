@@ -14,10 +14,8 @@ void TestScene::Init() {
 	// ImGuiManagerインスタンスの取得
 	imguiManager_ = ImGuiManager::GetInstance();
 
-	//worldTransform_.Initialize();
-
-	camera_.translation_ = {0.0f, 0.0f, 0.0f};
-	camera_.rotation_ = {0.0f, 0.0f, 0.0f};
+	camera_.translation_ = {0.0f, 40.0f, 0.0f};
+	camera_.rotation_ = {1.57f, 0.0f, 0.0f};
 	camera_.Initialize();
 
 	testModel_ = Model::CreateSphere();
