@@ -1,4 +1,5 @@
 #include "TestScene.h"
+#include "MathUtilityForText.h"
 
 using namespace KamataEngine;
 
@@ -11,7 +12,7 @@ void TestScene::Init() {
 	//
 	worldTransform_.Initialize();
 
-	camera_.translation_ = {0.0f, 0.0f, -10.0f};
+	camera_.translation_ = {0.0f, 0.0f, -30.0f};
 	camera_.Initialize();
 
 	testModel_ = Model::CreateSphere();
@@ -22,7 +23,7 @@ void TestScene::Init() {
 
 void TestScene::Update() {
 	//
-	worldTransform_.TransferMatrix();
+	worldTransform_.UpdateMatrix(true);
 
 	camera_.UpdateMatrix();
 	camera_.TransferMatrix();

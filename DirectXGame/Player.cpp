@@ -13,7 +13,7 @@ void Player::Init() {
 
 void Player::Update() {
 	//
-	worldTransform_.TransferMatrix();
+	worldTransform_.UpdateMatrix(true);
 }
 
 void Player::Draw(Camera& camera) { model_->Draw(worldTransform_, camera); }
