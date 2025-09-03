@@ -13,7 +13,7 @@ void TestScene::Init() {
 	// ImGuiManagerインスタンスの取得
 	imguiManager_ = ImGuiManager::GetInstance();
 
-	worldTransform_.Initialize();
+	//worldTransform_.Initialize();
 
 	camera_.translation_ = {0.0f, 20.0f, 0.0f};
 	camera_.rotation_ = {1.57f, 0.0f, 0.0f};
@@ -27,8 +27,6 @@ void TestScene::Init() {
 
 void TestScene::Update() {
 	//
-	worldTransform_.UpdateMatrix(true);
-
 	camera_.UpdateMatrix();
 	camera_.TransferMatrix();
 

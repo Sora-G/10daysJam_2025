@@ -11,7 +11,6 @@ public:
 
 private:
 	KamataEngine::ImGuiManager* imguiManager_;
-	KamataEngine::WorldTransform worldTransform_;
 	KamataEngine::Camera camera_;
 	KamataEngine::Model* testModel_;
 
