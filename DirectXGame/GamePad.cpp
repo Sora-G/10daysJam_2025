@@ -4,8 +4,8 @@ using namespace KamataEngine;
 
 void GamePad::Init() {
 	// 初期化処理
-	leftStick_.deadZone = 24000;
-	rightStick_.deadZone = 24000;
+	leftStick_.deadZone = 8000;
+	rightStick_.deadZone = 8000;
 }
 
 void GamePad::Update() {
@@ -13,7 +13,6 @@ void GamePad::Update() {
 	
 	// 接続されているゲームパッドの入力状況を取得
 	dwResult_ = XInputGetState(0, &state_);
-	;
 
 	// ゲームパッドが接続されている時にボタン、トリガー、スティックの入力を受け付ける
 	if (dwResult_ == ERROR_SUCCESS) {

@@ -1,7 +1,6 @@
 #pragma once
 #include "KamataEngine.h"
 #include "Player.h"
-#include "GamePad.h"
 
 class TestScene {
 public:
@@ -17,5 +16,4 @@ private:
 	KamataEngine::Model* testModel_;
 
 	Player* player_;
-	GamePad* gamePad_;
 };
