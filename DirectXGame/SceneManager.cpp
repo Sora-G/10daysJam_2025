@@ -24,6 +24,8 @@ int SceneManager::Run() {
 	// DirectXCommonのInstanceを取得
 	KamataEngine::DirectXCommon* dxCommon = KamataEngine::DirectXCommon::GetInstance();
 
+	sceneArr_[currentSceneNo_]->Init();
+
 	// メインループ
 	while (true) {
 		// Engineの更新

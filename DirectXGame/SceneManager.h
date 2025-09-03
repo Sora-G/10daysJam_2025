@@ -10,7 +10,7 @@ private:
 	std::unique_ptr<IScene> sceneArr_[2];
 
 	//どのシーンを呼び出すのか管理する変数
-	int currentSceneNo_; //現在のシーン
+	int currentSceneNo_=0; //現在のシーン
 	int prevSceneNo_;    //前のシーン
 
 public:
