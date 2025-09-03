@@ -157,6 +157,7 @@
     <ClCompile Include="DevelopScene.cpp" />
     <ClCompile Include="IScene.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="TestScene.cpp" />
     <ClCompile Include="TitleScene.cpp" />
@@ -261,6 +262,7 @@
   <ItemGroup>
     <ClInclude Include="DevelopScene.h" />
     <ClInclude Include="IScene.h" />
+    <ClInclude Include="Player.h" />
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="TestScene.h" />
     <ClInclude Include="TitleScene.h" />
