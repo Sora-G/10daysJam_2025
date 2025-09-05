@@ -48,7 +48,7 @@ void PlayerCamera::Update() {
 	ImGui::Begin("camera debug window");
 	ImGui::Text("Pos [%.2f,%.2f,%.2f]", worldTransform_.translation_.x, worldTransform_.translation_.y, worldTransform_.translation_.z);
 	ImGui::Text("Rot [%.2f,%.2f,%.2f]", worldTransform_.rotation_.x, worldTransform_.rotation_.y, worldTransform_.rotation_.z);
-	ImGui::SliderFloat("thetaX", &theta_.x, 0.0f, 6.28f);
+	ImGui::SliderFloat("thetaX", &theta_.x, -6.28f, 6.28f);
 	ImGui::SliderFloat("dist", &dist_, -100.0f, -1.0f);
 	ImGui::End();
 }
