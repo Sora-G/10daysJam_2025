@@ -23,7 +23,7 @@ void Player::Update() {
 	//更新処理
 	worldTransform_.UpdateMatrix(true);
 
-	gamePad_->Update();
+	gamePad_->Update(true);
 
 
 	//移動処理
@@ -40,6 +40,7 @@ void Player::Update() {
 		worldTransform_.translation_.x, 
 		worldTransform_.translation_.y, 
 		worldTransform_.translation_.z);
+	ImGui::Text("move [%.2f,%.2f]", move.x, move.y);
 	ImGui::End();
 }
 

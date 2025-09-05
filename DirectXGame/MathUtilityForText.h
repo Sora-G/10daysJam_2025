@@ -10,3 +10,6 @@ KamataEngine::Matrix4x4 MatrixMultply(KamataEngine::Matrix4x4& m1, KamataEngine:
 
 // アフィン変換行列
 KamataEngine::Matrix4x4 MakeAffineMatrix(const KamataEngine::Vector3& scale, const KamataEngine::Vector3& rot, const KamataEngine::Vector3& translate);
+
+// 逆行列
+KamataEngine::Matrix4x4 Inverse(const KamataEngine::Matrix4x4& matrix);

@@ -1,6 +1,7 @@
 #pragma once
 #include "KamataEngine.h"
 #include "Player.h"
+#include "PlayerCamera.h"
 #include "Skydome.h"
 
 class TestScene {
@@ -16,5 +17,6 @@ private:
 	KamataEngine::Model* testModel_;
 
 	Player* player_;
+	PlayerCamera* playerCamera_;
 	Skydome* skydome_;
 };

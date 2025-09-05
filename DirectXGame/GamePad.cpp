@@ -6,9 +6,10 @@ void GamePad::Init() {
 	// 初期化処理
 	leftStick_.deadZone = 8000;
 	rightStick_.deadZone = 8000;
+	isDebugView_ = false;
 }
 
-void GamePad::Update() {
+void GamePad::Update(bool isDebugView) {
 	//更新処理
 	
 	// 接続されているゲームパッドの入力状況を取得
@@ -21,24 +22,25 @@ void GamePad::Update() {
 
 
 
-	
-	// ImGuiデバッグ
-	ImGui::SetNextWindowSize(ImVec2(200, 300), 1);
-	ImGui::Begin("gamePad debug window");
+	isDebugView_ = isDebugView;
+	if (isDebugView_ == true) {
+		// ImGuiデバッグ
+		ImGui::SetNextWindowSize(ImVec2(200, 300), 1);
+		ImGui::Begin("gamePad debug window");
 
-	if (dwResult_ == ERROR_SUCCESS) {
-		ImGui::Text("gamePad is connected");
-	} else {
-		ImGui::Text("gamePad is disconnected");
+		if (dwResult_ == ERROR_SUCCESS) {
+			ImGui::Text("gamePad is connected");
+		} else {
+			ImGui::Text("gamePad is disconnected");
+		}
+
+		ImGui::Text("Left  : [%6d , %6d]", leftStick_.x, leftStick_.y);
+		ImGui::Text("Right : [%6d , %6d]", rightStick_.x, rightStick_.y);
+		ImGui::Text("NLeft  : [%5.2f , %5.2f]", leftStickNorm_.x, leftStickNorm_.y);
+		ImGui::Text("NRight : [%5.2f , %5.2f]", rightStickNorm_.x, rightStickNorm_.y);
+
+		ImGui::End();
 	}
-
-	ImGui::Text("Left  : [%6d , %6d]", leftStick_.x, leftStick_.y);
-	ImGui::Text("Right : [%6d , %6d]", rightStick_.x, rightStick_.y);
-	ImGui::Text("NLeft  : [%5.2f , %5.2f]", leftStickNorm_.x, leftStickNorm_.y);
-	ImGui::Text("NRight : [%5.2f , %5.2f]", rightStickNorm_.x, rightStickNorm_.y);
-	
-
-	ImGui::End();
 }
 
 void GamePad::InputStick() {

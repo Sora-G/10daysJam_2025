@@ -8,6 +8,7 @@ public:
 	void Init();
 	void Update();
 	void Draw(KamataEngine::Camera& camera);
+	const KamataEngine::WorldTransform& GetWorldTransform() { return worldTransform_; }
 
 private:
 	KamataEngine::WorldTransform worldTransform_;

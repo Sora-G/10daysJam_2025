@@ -11,7 +11,7 @@ typedef struct {
 class GamePad {
 public:
 	void Init();// 初期化処理
-	void Update();//更新処理
+	void Update(bool isDebugView); // 更新処理
 
 	/// <summary>
 	/// スティックの入力処理
@@ -40,4 +40,6 @@ private:
 
 	Stick rightStick_, leftStick_;         // 左右のスティックの情報
 	KamataEngine::Vector2 rightStickNorm_, leftStickNorm_; // 左右のスティックの入力値(0~1)
+
+	bool isDebugView_ = false;//ImGuiを描画するか
 };
