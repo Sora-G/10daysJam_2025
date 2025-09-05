@@ -23,7 +23,7 @@ void TestScene::Init() {
 	player_->Init();
 
 	playerCamera_ = new PlayerCamera();
-	playerCamera_->Init({0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f});
+	playerCamera_->Init();
 	playerCamera_->SetParent(&player_->GetWorldTransform());
 
 	skydome_ = new Skydome();

@@ -6,7 +6,7 @@
 
 class PlayerCamera {
 public:
-	void Init(KamataEngine::Vector3 worldPos, KamataEngine::Vector3 radian);
+	void Init();
 	void Update();
 
 	//カメラの情報取得
@@ -19,4 +19,7 @@ private:
 	KamataEngine::Camera camera_;
 
 	GamePad* gamePad_;
+
+	float dist_;//プレイヤーとカメラの距離
+	KamataEngine::Vector2 theta_;//カメラの角度
 };
