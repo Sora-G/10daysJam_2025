@@ -29,9 +29,9 @@ void PlayerCamera::Update() {
 	//ゲームパッドの更新処理
 	gamePad_->Update(false);
 
-	const float kMoveSpd = float(M_PI) / 180.0f;
+	const float kRotSpd = float(M_PI) / 180.0f;
 
-	theta_.x += gamePad_->GetRightStickState().x *kMoveSpd;
+	theta_.x += gamePad_->GetRightStickState().x *kRotSpd;
 
 	if (theta_.x >= 6.28) {
 		theta_.x = 0.0f;
