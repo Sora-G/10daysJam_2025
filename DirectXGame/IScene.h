@@ -5,7 +5,11 @@
 enum SCENE {
 	DEVELOP,//開発用シーン(機能追加等を行う)
 	TITLE,//タイトルシーン
+	RULE1,//ルール説明1
+	RULE2,//ルール説明2
 	GAME,//ゲームシーン
+	GAME_CLEAR,//ゲームクリア
+	GAME_OVER//ゲームオーバー
 };
 
 //シーン内の処理を行う基底クラス
