@@ -156,6 +156,7 @@
   <ItemGroup>
     <ClCompile Include="DevelopScene.cpp" />
     <ClCompile Include="GamePad.cpp" />
+    <ClCompile Include="GameScene.cpp" />
     <ClCompile Include="IScene.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MathUtilityForText.cpp" />
@@ -267,6 +268,7 @@
   <ItemGroup>
     <ClInclude Include="DevelopScene.h" />
     <ClInclude Include="GamePad.h" />
+    <ClInclude Include="GameScene.h" />
     <ClInclude Include="IScene.h" />
     <ClInclude Include="MathUtilityForText.h" />
     <ClInclude Include="Player.h" />
