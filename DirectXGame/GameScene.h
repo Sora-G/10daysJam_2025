@@ -33,8 +33,8 @@ public:
 	// IScene に準拠
 	void Init() override;
 	void Update() override;
-	void DrawBackGroundSprite() override;
-	void DrawForeGroundSprite() override;
+	void DrawBackGroundSprite() override; 
+	void DrawForeGroundSprite() override; 
 	void DrawModel() override;
 
 private:
@@ -44,12 +44,12 @@ private:
 	KamataEngine::Audio* audio_ = nullptr;
 	KamataEngine::ImGuiManager* imguiMgr_ = nullptr;
 
-	KamataEngine::Camera camera_; // PlayerCamera から View/Proj を受け取って使う
+	KamataEngine::Camera camera_;
 
 	// --- モデル ---
 	KamataEngine::Model* modelStage_ = nullptr;
 	KamataEngine::Model* modelMagma_ = nullptr;
-	KamataEngine::Model* modelMarker_ = nullptr; // 赤マーカー（モデル）
+	KamataEngine::Model* modelMarker_ = nullptr; // 赤マーカー
 	KamataEngine::Model* modelIcicle_ = nullptr; // つらら
 
 	// --- オブジェクト ---
@@ -69,6 +69,10 @@ private:
 	std::mt19937 rng_{std::random_device{}()};
 	std::uniform_real_distribution<float> dist01_{0.0f, 1.0f};
 
+	// 白1x1テクスチャ
+	uint32_t whiteTex_ = 0; // 頭上HPバー用
+
+private:
 	// --- ヘルパ ---
 	void SpawnMarkerOnStage(float warnSec = 3.0f);
 	void SpawnIcicleAt(const KamataEngine::Vector3& groundPos, float dropHeight = 25.0f);

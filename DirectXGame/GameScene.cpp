@@ -1,7 +1,8 @@
 #include "GameScene.h"
 #include <algorithm>
+#include <base/TextureManager.h>
 #include <cassert>
-#include <cmath> // std::fmax, std::sqrt, std::cos, std::sin
+#include <cmath>
 
 using namespace KamataEngine;
 
@@ -19,7 +20,7 @@ void GameScene::Init() {
 	audio_ = Audio::GetInstance();
 	imguiMgr_ = ImGuiManager::GetInstance();
 
-	// カメラ（実際は PlayerCamera の行列を毎フレコピー）
+	// カメラ（
 	camera_.Initialize();
 
 	// モデル読み込み
@@ -38,9 +39,14 @@ void GameScene::Init() {
 	magma_ = new Magma();
 	magma_->Initialize(modelMagma_);
 
-	// SkyDome / Player / PlayerCamera
+	
 	player_ = new Player();
 	player_->Init();
+
+	whiteTex_ = TextureManager::Load("./Resources/white1x1.png"); // 実パスに合わせて
+
+	player_->InitHpBar(whiteTex_, /*size*/ {120.0f, 15.0f}, /*offset*/ {0.0f, 3.3f, 0.0f});
+
 	playerCamera_ = new PlayerCamera();
 	playerCamera_->Init();
 	playerCamera_->SetParent(&player_->GetWorldTransform());
@@ -48,26 +54,25 @@ void GameScene::Init() {
 	skydome_ = new Skydome();
 	skydome_->Initialize();
 
-	// 初回確認用マーカー
-	SpawnMarkerOnStage(/*warnSec=*/3.0f);
+	
+	SpawnMarkerOnStage(3.0f);
 }
 
 void GameScene::SpawnMarkerOnStage(float warnSec) {
 	const float topY = stage_->GetTopY();
-	const auto center = stage_->GetCenterXZ(); // center.x = X, center.y = Z
+	const auto center = stage_->GetCenterXZ();
 	const float stageR = stage_->GetRadius();
 	const float yawRad = stage_->GetYawRad();
 
-	// 円内一様（端を避けるマージン）
+	// 円内一様
 	const float margin = stageR * 0.12f;
 	const float usableR = std::fmax(stageR - margin, 0.0f);
 
 	const float theta = 2.0f * 3.1415926535f * dist01_(rng_);
 	const float r = usableR * std::sqrt(dist01_(rng_));
 	const float x = center.x + std::cos(theta) * r;
-	const float z = center.y + std::sin(theta) * r; // Vector2.y を z として扱う
+	const float z = center.y + std::sin(theta) * r; 
 
-	// ステージ半径に対する比率でマーカー半径を決定
 	const float markerR = stageR * 0.30f;
 
 	auto m = std::make_unique<AttackMarker>();
@@ -90,31 +95,31 @@ void GameScene::SpawnIcicleAt(const Vector3& groundPos, float dropHeight) {
 }
 
 void GameScene::Update() {
-	// ImGui フレーム開始（Player/Camera 内のウィンドウが依存）
+	
 	imguiMgr_->Begin();
 
-	// PlayerCamera → camera_ へ反映（ここで matView / matProjection をコピー）
+	//PlayerCamera を更新 → camera_ に反映
 	playerCamera_->Update();
-	camera_.matView = playerCamera_->GetCamera().matView;
-	camera_.matProjection = playerCamera_->GetCamera().matProjection;
-	camera_.TransferMatrix(); // camera_.UpdateMatrix() は不要
+	const Camera& viewCam = playerCamera_->GetCamera();
+	camera_.matView = viewCam.matView;
+	camera_.matProjection = viewCam.matProjection;
+	camera_.TransferMatrix();
 
-	// 各オブジェクト更新
+	// オブジェクト更新
 	player_->Update();
 	stage_->Update();
 	magma_->Update();
 	skydome_->Update();
 
-	// 5秒間隔でマーカー出現（固定60fps想定）
+	// 5秒間隔でマーカー出現
 	spawnTimer_ += 1.0f / 60.0f;
 	if (spawnTimer_ >= 5.0f) {
 		spawnTimer_ = 0.0f;
 		SpawnMarkerOnStage(/*warnSec=*/3.0f);
 	}
 
-	const float topY = stage_->GetTopY();
-
 	// マーカー更新 → 期限切れでつらら出現
+	const float topY = stage_->GetTopY();
 	for (auto& m : markers_) {
 		m->SetTopY(topY);
 		m->Update();
@@ -126,28 +131,49 @@ void GameScene::Update() {
 	markers_.erase(std::remove_if(markers_.begin(), markers_.end(), [](const std::unique_ptr<AttackMarker>& p) { return p->IsExpired(); }), markers_.end());
 
 	// つらら更新・着弾で削除
-	for (auto& i : icicles_)
+	for (auto& i : icicles_) {
 		i->Update();
+	}
 	icicles_.erase(std::remove_if(icicles_.begin(), icicles_.end(), [](const std::unique_ptr<FallingRock>& r) { return r->HasHitGround(); }), icicles_.end());
+
+	//頭上HPバー追従（
+	constexpr int kScreenW = 1280; 
+	constexpr int kScreenH = 720;  
+	player_->UpdateHpBar(camera_, kScreenW, kScreenH);
 
 	// ImGui フレーム終わり
 	imguiMgr_->End();
 }
 
 void GameScene::DrawBackGroundSprite() {
-	// 外側で Sprite::PreDraw/PostDraw を呼ぶ設計なら何もしない
+	
+	dxCommon_->ClearDepthBuffer();
 }
 
 void GameScene::DrawModel() {
-	// ★ ステージを先、マグマを後、スカイドームは最後（深度で塞がない）
+	// 描画順：Stage → Magma → Marker/Icicle → Player → Skydome
 	stage_->Draw(camera_);
 	magma_->Draw(camera_);
-	for (auto& m : markers_)
+	for (auto& m : markers_) {
 		m->Draw(camera_);
-	for (auto& i : icicles_)
+	}
+	for (auto& i : icicles_) {
 		i->Draw(camera_);
+	}
 	player_->Draw(camera_);
 	skydome_->Draw(camera_);
 }
 
-void GameScene::DrawForeGroundSprite() { imguiMgr_->Draw(); }
+void GameScene::DrawForeGroundSprite() {
+	
+	ID3D12GraphicsCommandList* cl = dxCommon_->GetCommandList();
+	Sprite::PreDraw(cl);
+
+	// プレイヤー頭上のHPバー（白1x1で描画）
+	player_->DrawUI();
+
+	Sprite::PostDraw();
+
+	// ImGui の描画（
+	imguiMgr_->Draw();
+}
