@@ -13,7 +13,7 @@ void Player::Init() {
 
 	worldTransform_.Initialize();
 
-	model_ = Model::CreateSphere();
+	model_ = Model::CreateFromOBJ("player");
 
 	gamePad_ = new GamePad();
 	gamePad_->Init();
