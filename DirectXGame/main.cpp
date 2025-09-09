@@ -1,6 +1,7 @@
 #include <Windows.h>
 #include "KamataEngine.h"
 #include "TestScene.h"
+#include "GameScene.h"
 
 using namespace KamataEngine;
 
@@ -11,20 +12,20 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 	DirectXCommon* dxCommon = DirectXCommon::GetInstance();
 
-	TestScene* testScene = new TestScene();
-	testScene->Init();
+	GameScene* gameScene = new GameScene();
+	gameScene->Init();
 
 	while (true) {
 		if (KamataEngine::Update()) {
 			break;
 		}
 
-		testScene->Update();
+		gameScene->Update();
 
 		dxCommon->PreDraw();
 		Model::PreDraw();
 
-		testScene->Draw();
+		gameScene->DrawModel();
 
 		Model::PostDraw();
 		dxCommon->PostDraw();

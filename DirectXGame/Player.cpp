@@ -4,14 +4,18 @@
 using namespace KamataEngine;
 
 Player::~Player() {
-	//解放処理
+	// 解放処理
 	delete gamePad_;
+	gamePad_ = nullptr;
 }
 
 void Player::Init() {
-	//初期化処理
-
+	// 初期化処理
 	worldTransform_.Initialize();
+
+	// ★ プレイヤーを少し高く（見切れ防止）
+	worldTransform_.translation_.y = 25.0f;
+	worldTransform_.UpdateMatrix(true);
 
 	model_ = Model::CreateFromOBJ("player");
 
@@ -20,13 +24,12 @@ void Player::Init() {
 }
 
 void Player::Update() {
-	//更新処理
+	// 更新処理
 	worldTransform_.UpdateMatrix(true);
 
 	gamePad_->Update(true);
 
-
-	//移動処理
+	// 移動処理（XZ のみ変更、Y は据え置き）
 	Vector3 move = {0.0f, 0.0f, 0.0f};
 	const float kMoveSpeed = 0.2f;
 	move.x += gamePad_->GetLeftStickState().x * kMoveSpeed;
@@ -36,15 +39,12 @@ void Player::Update() {
 	// ImGuiデバッグ
 	ImGui::SetNextWindowSize(ImVec2(200, 300), 1);
 	ImGui::Begin("player debug window");
-	ImGui::Text("Pos [%.2f,%.2f,%.2f]", 
-		worldTransform_.translation_.x, 
-		worldTransform_.translation_.y, 
-		worldTransform_.translation_.z);
+	ImGui::Text("Pos [%.2f,%.2f,%.2f]", worldTransform_.translation_.x, worldTransform_.translation_.y, worldTransform_.translation_.z);
 	ImGui::Text("move [%.2f,%.2f]", move.x, move.y);
 	ImGui::End();
 }
 
 void Player::Draw(Camera& camera) {
-	//描画処理
-	model_->Draw(worldTransform_, camera); 
+	// 描画処理
+	model_->Draw(worldTransform_, camera);
 }

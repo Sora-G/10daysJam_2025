@@ -20,6 +20,9 @@ private:
 
 	GamePad* gamePad_;
 
-	float dist_;//プレイヤーとカメラの距離
-	KamataEngine::Vector2 theta_;//カメラの角度
+	//float dist_;//プレイヤーとカメラの距離
+	//KamataEngine::Vector2 theta_;//カメラの角度
+	float dist_ = -20.0f; // プレイヤーとカメラの距離（後方）
+	KamataEngine::Vector2 theta_{0, 0};
+
 };

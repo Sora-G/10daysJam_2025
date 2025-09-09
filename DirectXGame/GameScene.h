@@ -1,13 +1,75 @@
 #pragma once
 #include "IScene.h"
+#include "KamataEngine.h"
+
+#include <3d/Camera.h>
+#include <3d/Model.h>
+#include <3d/WorldTransform.h>
+
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <Windows.h>
+#include <base/DirectXCommon.h>
+
+#include "AttackMarker.h"
+#include "FallingRock.h"
+#include "Magma.h"
+#include "Player.h"
+#include "PlayerCamera.h"
+#include "Skydome.h"
+#include "Stage.h"
+#include "kMath.h"
+#include <2d/Sprite.h>
+
+#include <memory>
+#include <random>
+#include <vector>
+
 class GameScene : public IScene {
 public:
-	~GameScene();                        // 解放処理
-	void Init() override;                 // 初期化処理
-	void Update() override;               // 更新処理
-	void DrawBackGroundSprite() override; // 背景の描画処理
-	void DrawForeGroundSprite() override; // 近景の描画処理
-	void DrawModel() override;            // モデルの描画処理
+	~GameScene() override;
+
+	// IScene に準拠
+	void Init() override;
+	void Update() override;
+	void DrawBackGroundSprite() override;
+	void DrawForeGroundSprite() override;
+	void DrawModel() override;
 
 private:
+	// --- 基本 ---
+	KamataEngine::DirectXCommon* dxCommon_ = nullptr;
+	KamataEngine::Input* input_ = nullptr;
+	KamataEngine::Audio* audio_ = nullptr;
+	KamataEngine::ImGuiManager* imguiMgr_ = nullptr;
+
+	KamataEngine::Camera camera_; // PlayerCamera から View/Proj を受け取って使う
+
+	// --- モデル ---
+	KamataEngine::Model* modelStage_ = nullptr;
+	KamataEngine::Model* modelMagma_ = nullptr;
+	KamataEngine::Model* modelMarker_ = nullptr; // 赤マーカー（モデル）
+	KamataEngine::Model* modelIcicle_ = nullptr; // つらら
+
+	// --- オブジェクト ---
+	Stage* stage_ = nullptr;
+	Magma* magma_ = nullptr;
+	Player* player_ = nullptr;
+	PlayerCamera* playerCamera_ = nullptr;
+	Skydome* skydome_ = nullptr;
+
+	std::vector<std::unique_ptr<AttackMarker>> markers_;
+	std::vector<std::unique_ptr<FallingRock>> icicles_;
+
+	// 5秒間隔でスポーン
+	float spawnTimer_ = 0.0f;
+
+	// 乱数
+	std::mt19937 rng_{std::random_device{}()};
+	std::uniform_real_distribution<float> dist01_{0.0f, 1.0f};
+
+	// --- ヘルパ ---
+	void SpawnMarkerOnStage(float warnSec = 3.0f);
+	void SpawnIcicleAt(const KamataEngine::Vector3& groundPos, float dropHeight = 25.0f);
 };
