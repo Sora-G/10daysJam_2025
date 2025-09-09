@@ -154,7 +154,25 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AttackMarker.cpp" />
+    <ClCompile Include="DevelopScene.cpp" />
+    <ClCompile Include="FallingRock.cpp" />
+    <ClCompile Include="GamePad.cpp" />
+    <ClCompile Include="GameScene.cpp" />
+    <ClCompile Include="HpBar.cpp" />
+    <ClCompile Include="IScene.cpp" />
+    <ClCompile Include="kMath.cpp" />
+    <ClCompile Include="Magma.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MathUtilityForText.cpp" />
+    <ClCompile Include="Player.cpp" />
+    <ClCompile Include="PlayerCamera.cpp" />
+    <ClCompile Include="SceneManager.cpp" />
+    <ClCompile Include="Skydome.cpp" />
+    <ClCompile Include="Stage.cpp" />
+    <ClCompile Include="TestScene.cpp" />
+    <ClCompile Include="TitleScene.cpp" />
+    <ClCompile Include="WorldTransformEX.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\shaders\TerrainPS.hlsl">
@@ -252,6 +270,25 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\shaders\Sprite.hlsli" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AttackMarker.h" />
+    <ClInclude Include="DevelopScene.h" />
+    <ClInclude Include="FallingRock.h" />
+    <ClInclude Include="GamePad.h" />
+    <ClInclude Include="GameScene.h" />
+    <ClInclude Include="HpBar.h" />
+    <ClInclude Include="IScene.h" />
+    <ClInclude Include="kMath.h" />
+    <ClInclude Include="Magma.h" />
+    <ClInclude Include="MathUtilityForText.h" />
+    <ClInclude Include="Player.h" />
+    <ClInclude Include="PlayerCamera.h" />
+    <ClInclude Include="SceneManager.h" />
+    <ClInclude Include="Skydome.h" />
+    <ClInclude Include="Stage.h" />
+    <ClInclude Include="TestScene.h" />
+    <ClInclude Include="TitleScene.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
