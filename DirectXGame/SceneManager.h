@@ -4,11 +4,12 @@
 #include "IScene.h"
 #include "DevelopScene.h"
 #include "TitleScene.h"
+#include "GameScene.h"
 
 class SceneManager {
 private:
 	//シーンを保持するメンバ変数
-	std::unique_ptr<IScene> sceneArr_[2];
+	std::unique_ptr<IScene> sceneArr_[3];
 
 	//どのシーンを呼び出すのか管理する変数
 	int currentSceneNo_; //現在のシーン
