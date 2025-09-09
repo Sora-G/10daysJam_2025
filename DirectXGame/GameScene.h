@@ -1,6 +1,7 @@
 #pragma once
 #include "IScene.h"
 class GameScene : public IScene {
+public:
 	~GameScene();                        // 解放処理
 	void Init() override;                 // 初期化処理
 	void Update() override;               // 更新処理
