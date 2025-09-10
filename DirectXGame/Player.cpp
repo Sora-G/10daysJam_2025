@@ -1,6 +1,7 @@
+// Player.cpp
 #include "Player.h"
 #include "MathUtilityForText.h"
-#include <imgui.h>
+#include <imgui.h> // マウスのデルタ取得（ImGui::GetIO().MouseDelta）
 
 using namespace KamataEngine;
 
@@ -11,7 +12,7 @@ Player::~Player() {
 
 void Player::Init() {
 	worldTransform_.Initialize();
-	worldTransform_.translation_.y = 30.0f; // 仮の開始高さ
+	worldTransform_.translation_ = {0.0f, 5.0f, 0.0f}; // 初期はとりあえず 5
 	worldTransform_.rotation_ = {0.0f, 0.0f, 0.0f};
 	worldTransform_.UpdateMatrix(true);
 
@@ -24,12 +25,9 @@ void Player::Init() {
 	hp_ = 100;
 	damageCooldown_ = 0.0f;
 
-	// ジャンプ/重力
-	baseY_ = worldTransform_.translation_.y;
 	velY_ = 0.0f;
 	onGround_ = true;
 
-	// 視点（Yaw）
 	yawRad_ = worldTransform_.rotation_.y;
 }
 
@@ -52,7 +50,7 @@ void Player::Update() {
 			damageCooldown_ = 0.0f;
 	}
 
-	// マウスYaw
+	// ===== マウスで視点（Yaw）回転：常時 =====
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		if (!io.WantCaptureMouse) {
@@ -61,16 +59,17 @@ void Player::Update() {
 	}
 	worldTransform_.rotation_.y = yawRad_;
 
-	// 横移動（ローカル→ワールド）
+	// ===== 横移動（プレイヤーの向き基準：ローカル→ワールド） =====
 	Vector3 localMove{0.0f, 0.0f, 0.0f};
 	if (in->PushKey(DIK_A))
 		localMove.x -= kMoveSpeedKeys_;
 	if (in->PushKey(DIK_D))
 		localMove.x += kMoveSpeedKeys_;
 	if (in->PushKey(DIK_S))
-		localMove.z -= kMoveSpeedKeys_; // 前=-Z
+		localMove.z -= kMoveSpeedKeys_; // 前 = -Z と仮定
 	if (in->PushKey(DIK_W))
-		localMove.z += kMoveSpeedKeys_; // 後=+Z
+		localMove.z += kMoveSpeedKeys_; // 後 = +Z
+
 	localMove.x += gamePad_->GetLeftStickState().x * kMoveSpeedPad_;
 	localMove.z += gamePad_->GetLeftStickState().y * kMoveSpeedPad_;
 
@@ -81,7 +80,7 @@ void Player::Update() {
 		worldTransform_.translation_ += worldMove;
 	}
 
-	// ジャンプ・重力
+	// ===== ジャンプ・重力 =====
 	if (in->TriggerKey(DIK_SPACE) && onGround_) {
 		velY_ = kJumpSpeed_;
 		onGround_ = false;
@@ -89,13 +88,15 @@ void Player::Update() {
 	velY_ += kGravity_ * dt;
 	worldTransform_.translation_.y += velY_ * dt;
 
-	// 接地
-	if (worldTransform_.translation_.y <= baseY_) {
-		worldTransform_.translation_.y = baseY_;
+	// 接地（SetGroundYで決まる baseY による）
+	const float baseY = GetBaseY();
+	if (worldTransform_.translation_.y <= baseY) {
+		worldTransform_.translation_.y = baseY;
 		velY_ = 0.0f;
 		onGround_ = true;
 	}
 
+	// 行列更新
 	worldTransform_.UpdateMatrix(true);
 }
 
@@ -116,45 +117,27 @@ void Player::DrawUI() {
 		hpBar_->Draw();
 }
 
+// ====== 追加メソッド ======
+void Player::SetGroundY(float surfaceY) {
+	baseSurfaceY_ = surfaceY;
+	// 地面の方が高いとめり込みを即座に解消
+	const float baseY = GetBaseY();
+	if (worldTransform_.translation_.y < baseY) {
+		worldTransform_.translation_.y = baseY;
+		velY_ = 0.0f;
+		onGround_ = true;
+	}
+}
+
+void Player::SetPositionY(float y) { worldTransform_.translation_.y = y; }
+void Player::SetPositionXZ(float x, float z) {
+	worldTransform_.translation_.x = x;
+	worldTransform_.translation_.z = z;
+}
+void Player::ForceUpdateMatrix() { worldTransform_.UpdateMatrix(true); }
+
 AABB Player::GetAABB() const {
 	const Vector3 c = worldTransform_.translation_;
 	const Vector3 half = {kRadius_, kHalfHeight_, kRadius_};
 	return AABB{c - half, c + half};
 }
-
-// ===== 位置調整 =====
-void Player::SetGroundY(float surfaceY) {
-	const float newBase = surfaceY + kHalfHeight_ + kGroundClearance_ + extraGroundClearance_;
-
-	if (worldTransform_.translation_.y > newBase + 1e-4f) {
-		onGround_ = false; // 高い位置にいるなら空中扱い
-	}
-	baseY_ = newBase;
-
-	// 下めり込みは即補正
-	if (worldTransform_.translation_.y < baseY_) {
-		worldTransform_.translation_.y = baseY_;
-		velY_ = 0.0f;
-		onGround_ = true;
-		worldTransform_.UpdateMatrix(true);
-	}
-}
-
-void Player::SnapToGround() {
-	worldTransform_.translation_.y = baseY_;
-	velY_ = 0.0f;
-	onGround_ = true;
-	worldTransform_.UpdateMatrix(true);
-}
-
-void Player::SetPositionXZ(float x, float z) {
-	worldTransform_.translation_.x = x;
-	worldTransform_.translation_.z = z;
-}
-
-void Player::SetPositionY(float y) {
-	worldTransform_.translation_.y = y;
-	worldTransform_.UpdateMatrix(true);
-}
-
-void Player::ForceUpdateMatrix() { worldTransform_.UpdateMatrix(true); }

@@ -80,20 +80,19 @@ private:
 	KamataEngine::Sprite* tensSpr_[10] = {nullptr}; // 十の位 0～9
 	KamataEngine::Sprite* onesSpr_[10] = {nullptr}; // 一の位 0～9
 
-	// 画面サイズ・数字の描画サイズ（必要に応じて調整）
 	static constexpr int kScreenW_ = 1280;
 	static constexpr int kScreenH_ = 720;
-	static constexpr float kDigitDrawW_ = 48.0f; // 表示幅
-	static constexpr float kDigitDrawH_ = 96.0f; // 表示高
+	static constexpr float kDigitDrawW_ = 48.0f;
+	static constexpr float kDigitDrawH_ = 96.0f;
 
 private:
 	// --- ヘルパ ---
 	void SpawnMarkerOnStage(float warnSec = 3.0f);
-	void SpawnIcicleAt(const KamataEngine::Vector3& groundPos, float dropHeight = 40.0f); // 高めから落とす
+	void SpawnIcicleAt(const KamataEngine::Vector3& groundPos, float dropHeight = 40.0f);
 
 	// --- 当たり判定 ---
 	void ResolvePlayerIcicleCollisions();
-	// Player×Stage（接地＋外周クランプ＋上方向スナップ＋最終クランプ）
+	// Player×Stage（接地＋外周クランプ＋最終クランプ）
 	void ResolvePlayerStageCollision();
 
 	// --- カウントダウン表示 ---
