@@ -174,7 +174,7 @@ void GameScene::Update() {
 		m->SetTopY(topY);
 		m->Update();
 		if (m->IsExpired()) {
-			// ← 落下高さを高めに（既定 40.0f）
+			// ← 落下高さを高めに（既定 40.0f)///
 			SpawnIcicleAt(m->GetPosition(), /*dropHeight=*/40.0f);
 		}
 	}
