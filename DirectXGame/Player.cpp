@@ -71,9 +71,9 @@ void Player::Update() {
 		localMove.x -= kMoveSpeedKeys_;
 	if (in->PushKey(DIK_D))
 		localMove.x += kMoveSpeedKeys_;
-	if (in->PushKey(DIK_W))
-		localMove.z -= kMoveSpeedKeys_; // 前 = -Z と仮定
 	if (in->PushKey(DIK_S))
+		localMove.z -= kMoveSpeedKeys_; // 前 = -Z と仮定
+	if (in->PushKey(DIK_W))
 		localMove.z += kMoveSpeedKeys_; // 後 = +Z
 
 	// 左スティックも向き基準で加算
