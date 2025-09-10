@@ -1,6 +1,6 @@
-// Player.cpp
 #include "Player.h"
 #include "MathUtilityForText.h"
+#include <imgui.h> // マウスのデルタ取得（ImGui::GetIO().MouseDelta）
 
 using namespace KamataEngine;
 
@@ -11,7 +11,8 @@ Player::~Player() {
 
 void Player::Init() {
 	worldTransform_.Initialize();
-	worldTransform_.translation_.y = 25.0f;
+	worldTransform_.translation_.y = 25.0f; // 既存開始高さ
+	worldTransform_.rotation_ = {0.0f, 0.0f, 0.0f};
 	worldTransform_.UpdateMatrix(true);
 
 	model_ = Model::CreateFromOBJ("player");
@@ -22,6 +23,14 @@ void Player::Init() {
 	maxHp_ = 100;
 	hp_ = 100;
 	damageCooldown_ = 0.0f;
+
+	// ジャンプ/重力
+	baseY_ = worldTransform_.translation_.y; // 今の高さを地面扱い
+	velY_ = 0.0f;
+	onGround_ = true;
+
+	// 視点（Yaw）初期化
+	yawRad_ = worldTransform_.rotation_.y;
 }
 
 void Player::InitHpBar(uint32_t whiteTex, const Vector2& size, const Vector3& worldOffset) {
@@ -30,21 +39,68 @@ void Player::InitHpBar(uint32_t whiteTex, const Vector2& size, const Vector3& wo
 }
 
 void Player::Update() {
-	gamePad_->Update(true);
+	constexpr float dt = 1.0f / 60.0f;
 
-	// 無敵時間の更新
+	// 入力更新
+	gamePad_->Update(true);
+	Input* in = Input::GetInstance();
+
+	// 無敵時間
 	if (damageCooldown_ > 0.0f) {
-		damageCooldown_ -= (1.0f / 60.0f);
+		damageCooldown_ -= dt;
 		if (damageCooldown_ < 0.0f)
 			damageCooldown_ = 0.0f;
 	}
 
-	// 移動（XZ）
-	Vector3 move{0.0f, 0.0f, 0.0f};
-	constexpr float kMoveSpeed = 0.2f;
-	move.x += gamePad_->GetLeftStickState().x * kMoveSpeed;
-	move.z += gamePad_->GetLeftStickState().y * kMoveSpeed;
-	worldTransform_.translation_ += move;
+	// ===== マウスで視点（Yaw）回転：常時 =====
+	{
+		ImGuiIO& io = ImGui::GetIO();
+		// UI操作中は回したくない場合はブロック
+		if (!io.WantCaptureMouse) {
+			// 右に動かすと右回転（手前向き右手系なら符号入替で調整）
+			yawRad_ += io.MouseDelta.x * kMouseYawSensitivity_;
+		}
+	}
+	worldTransform_.rotation_.y = yawRad_;
+
+	// ===== 横移動（プレイヤーの向き基準：ローカル→ワールド） =====
+	Vector3 localMove{0.0f, 0.0f, 0.0f};
+
+	// キーボード（W前・S後・A左・D右）
+	if (in->PushKey(DIK_A))
+		localMove.x -= kMoveSpeedKeys_;
+	if (in->PushKey(DIK_D))
+		localMove.x += kMoveSpeedKeys_;
+	if (in->PushKey(DIK_W))
+		localMove.z -= kMoveSpeedKeys_; // 前 = -Z と仮定
+	if (in->PushKey(DIK_S))
+		localMove.z += kMoveSpeedKeys_; // 後 = +Z
+
+	// 左スティックも向き基準で加算
+	localMove.x += gamePad_->GetLeftStickState().x * kMoveSpeedPad_;
+	localMove.z += gamePad_->GetLeftStickState().y * kMoveSpeedPad_;
+
+	if (localMove.x != 0.0f || localMove.z != 0.0f) {
+		const float cy = std::cos(yawRad_);
+		const float sy = std::sin(yawRad_);
+		Vector3 worldMove{localMove.x * cy + localMove.z * sy, 0.0f, -localMove.x * sy + localMove.z * cy};
+		worldTransform_.translation_ += worldMove;
+	}
+
+	// ===== ジャンプ・重力 =====
+	if (in->TriggerKey(DIK_SPACE) && onGround_) {
+		velY_ = kJumpSpeed_;
+		onGround_ = false;
+	}
+	velY_ += kGravity_ * dt;
+	worldTransform_.translation_.y += velY_ * dt;
+
+	// 接地（Init時の高さを地面扱い）
+	if (worldTransform_.translation_.y <= baseY_) {
+		worldTransform_.translation_.y = baseY_;
+		velY_ = 0.0f;
+		onGround_ = true;
+	}
 
 	// 行列更新
 	worldTransform_.UpdateMatrix(true);
@@ -69,7 +125,6 @@ void Player::DrawUI() {
 
 AABB Player::GetAABB() const {
 	const Vector3 c = worldTransform_.translation_;
-	// プレイヤーのカプセルを「半径×半径×半身長」でAABB近似
 	const Vector3 half = {kRadius_, kHalfHeight_, kRadius_};
 	return AABB{c - half, c + half};
 }

@@ -1,9 +1,9 @@
-// Player.h
 #pragma once
 #include "Collision.h"
 #include "GamePad.h"
 #include "HpBar.h"
 #include "KamataEngine.h"
+#include <input/Input.h> // キーボード入力
 #include <memory>
 
 class Player {
@@ -64,7 +64,7 @@ private:
 	// 入力
 	GamePad* gamePad_ = nullptr;
 
-	// HP 値
+	// HP
 	int maxHp_ = 100;
 	int hp_ = 100;
 
@@ -72,10 +72,23 @@ private:
 	std::unique_ptr<HpBar> hpBar_;
 
 	// 当たり判定近似（カプセル相当をAABB化）
-	static constexpr float kRadius_ = 0.6f;     // 横方向の半径
+	static constexpr float kRadius_ = 0.6f;     // 横半径
 	static constexpr float kHalfHeight_ = 1.0f; // 縦の半身長
 
 	// ダメージのクールダウン
 	static constexpr float kDamageCooldownSec = 0.5f;
 	float damageCooldown_ = 0.0f;
+
+	// ===== 移動・ジャンプ =====
+	static constexpr float kMoveSpeedKeys_ = 0.20f; // WASD速度（フレーム基準）
+	static constexpr float kMoveSpeedPad_ = 0.20f;  // 左スティック
+	static constexpr float kJumpSpeed_ = 25.0f;     // 上向き初速
+	static constexpr float kGravity_ = -90.0f;      // 重力加速度(下向き)
+	float baseY_ = 0.0f;                            // 地面Y（Init時の高さを採用）
+	float velY_ = 0.0f;                             // 縦速度
+	bool onGround_ = true;                          // 接地中か
+
+	// ===== マウス視点（Yaw） =====
+	float yawRad_ = 0.0f;                                   // 現在の向き（Y回転）
+	static constexpr float kMouseYawSensitivity_ = 0.0035f; // ラジアン/ピクセル
 };
