@@ -93,10 +93,13 @@ private:
 
 	// --- 当たり判定 ---
 	void ResolvePlayerIcicleCollisions();
-	// ★追加：Player×Stage の当たり判定（接地＆円境界押し戻し）
+	// Player×Stage（接地＋外周クランプ＋上方向スナップ＋最終クランプ）
 	void ResolvePlayerStageCollision();
 
 	// --- カウントダウン表示 ---
 	void InitCountdownSprites_Fallback_();
 	void DrawCountdown_Fallback_(int remainSec);
+
+	// --- ゲームオーバー判定（HP=0 / ステージ外落下） ---
+	bool CheckGameOver_() const;
 };

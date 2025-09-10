@@ -1,4 +1,5 @@
 #include "GameClearScene.h" // ← クリアシーンのヘッダ
+#include "GameOverScene.h"
 #include "GameScene.h"
 #include "IScene.h"
 #include "KamataEngine.h"
@@ -28,6 +29,9 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 			switch (next) {
 			case GAME_CLEAR:
 				scene = new GameClearScene();
+				break;
+			case GAME_OVER:
+				scene = new GameOverScene();
 				break;
 			// 必要なら他シーンもここに追加
 			default:

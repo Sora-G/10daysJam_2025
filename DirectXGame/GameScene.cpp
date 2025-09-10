@@ -3,6 +3,7 @@
 #include <base/TextureManager.h>
 #include <cassert>
 #include <cmath>
+#include <imgui.h>
 #include <string>
 
 #ifdef max
@@ -14,22 +15,25 @@
 
 using namespace KamataEngine;
 
-// ===== カウントダウン初期化（UV不要版） =====
+// ===== カウントダウン初期化（画像10枚・UV不要版） =====
 void GameScene::InitCountdownSprites_Fallback_() {
 	for (int i = 0; i < 10; ++i) {
 		std::string path = "./Resources/number/" + std::to_string(i) + ".png";
 		digitTex_[i] = TextureManager::Load(path.c_str());
 
+		// 一の位（右）
 		onesSpr_[i] = Sprite::Create(digitTex_[i], {0.0f, 0.0f});
 		onesSpr_[i]->SetSize({kDigitDrawW_, kDigitDrawH_});
 		onesSpr_[i]->SetPosition({kScreenW_ - 24.0f - kDigitDrawW_, 16.0f});
 
+		// 十の位（左）
 		tensSpr_[i] = Sprite::Create(digitTex_[i], {0.0f, 0.0f});
 		tensSpr_[i]->SetSize({kDigitDrawW_, kDigitDrawH_});
 		tensSpr_[i]->SetPosition({kScreenW_ - 24.0f - kDigitDrawW_ * 2.0f, 16.0f});
 	}
 }
 
+// ===== 指定秒（0〜99）を2桁で描画 =====
 void GameScene::DrawCountdown_Fallback_(int remainSec) {
 	remainSec = std::clamp(remainSec, 0, 99);
 	const int tens = remainSec / 10;
@@ -41,11 +45,13 @@ void GameScene::DrawCountdown_Fallback_(int remainSec) {
 }
 
 GameScene::~GameScene() {
+	// カウントダウン用スプライト解放
 	for (int i = 0; i < 10; ++i) {
 		delete tensSpr_[i];
 		delete onesSpr_[i];
 		tensSpr_[i] = onesSpr_[i] = nullptr;
 	}
+	// 既存オブジェクト解放
 	delete stage_;
 	delete magma_;
 	delete player_;
@@ -71,9 +77,13 @@ void GameScene::Init() {
 	modelMarker_ = Model::CreateFromOBJ("marker");
 	assert(modelMarker_);
 
-	// ステージ／マグマ
+	// ステージ
 	stage_ = new Stage();
 	stage_->Initialize(modelStage_);
+	stage_->SetModelCollisionDims(/*halfHeight*/ 1.0f, /*radius*/ 1.0f);
+	stage_->SetTopYOffset(0.3f); // 見た目で上面が低く見える場合は調整
+
+	// マグマ
 	magma_ = new Magma();
 	magma_->Initialize(modelMagma_);
 
@@ -81,8 +91,19 @@ void GameScene::Init() {
 	player_ = new Player();
 	player_->Init();
 
+	// ★ 初期スポーン：床から spawnAbove m 上（自然落下→接地）
+	{
+		const float surfaceY = stage_->GetTopY();
+		const auto center = stage_->GetCenterXZ();
 
-	player_->SetGroundY(stage_->GetTopY()); // 位置は変えず、接地基準だけセット
+		player_->SetExtraGroundClearance(0.35f); // 見た目の浮き（ImGuiで後から変えられる）
+		player_->SetGroundY(surfaceY);           // baseY_ を確定
+
+		const float spawnAbove = 30.0f; // デバッグ時は 30.0f でもOK
+		player_->SetPositionXZ(center.x, center.y);
+		player_->SetPositionY(player_->GetBaseY() + spawnAbove);
+		player_->ForceUpdateMatrix();
+	}
 
 	// 頭上HPバー
 	whiteTex_ = TextureManager::Load("./Resources/white1x1.png");
@@ -111,6 +132,7 @@ void GameScene::SpawnMarkerOnStage(float warnSec) {
 	const float stageR = stage_->GetRadius();
 	const float yawRad = stage_->GetYawRad();
 
+	// 円内一様
 	const float margin = stageR * 0.12f;
 	const float usableR = std::fmax(stageR - margin, 0.0f);
 
@@ -140,13 +162,21 @@ void GameScene::SpawnIcicleAt(const Vector3& groundPos, float dropHeight) {
 	icicles_.push_back(std::move(rock));
 }
 
-// ★ Player×Stage（接地＆円境界押し戻し）
+// Player×Stage（接地＆円境界押し戻し + 上方向スナップ + 最終クランプ）
 void GameScene::ResolvePlayerStageCollision() {
-	// 一時的にステージ上面に 0.30f 持ち上げてみる
-	const float surfaceY = stage_->GetTopY() + 2.0f; // ← ここを変えるだけでもOK
+	// 1) 毎フレーム、床の高さを Player に通知（baseY_ 更新）
+	const float surfaceY = stage_->GetTopY();
 	player_->SetGroundY(surfaceY);
 
-	// 横方向：ステージ円境界内にクランプ
+	// 2) （任意）上方向のスナップ：baseY_に近いときだけ吸着
+	const float baseY = player_->GetBaseY();
+	const float py = player_->GetWorldTransform().translation_.y;
+	const float kSnapUpRange = 0.50f; // 0.5m以内なら上方向に寄せる
+	if (py < baseY || (py > baseY && (py - baseY) < kSnapUpRange)) {
+		player_->SetPositionY(baseY);
+	}
+
+	// 3) 円境界クランプ
 	const auto c = stage_->GetCenterXZ();            // x=中心X, y=中心Z
 	const float R = stage_->GetRadius();             // ステージ半径
 	const float pr = player_->GetColliderRadiusXZ(); // プレイヤー半径
@@ -170,6 +200,13 @@ void GameScene::ResolvePlayerStageCollision() {
 			player_->SetPositionXZ(c.x, c.y + maxDist);
 			player_->ForceUpdateMatrix();
 		}
+	}
+
+	// 4) ★最終ガード：どんな状況でも“床より下”は禁止
+	const float py2 = player_->GetWorldTransform().translation_.y;
+	if (py2 < baseY) {
+		player_->SetPositionY(baseY);
+		player_->ForceUpdateMatrix();
 	}
 }
 
@@ -208,24 +245,56 @@ void GameScene::ResolvePlayerIcicleCollisions() {
 	}
 }
 
+// --- 追加：ゲームオーバー判定（HP=0 / ステージ外落下） ---
+bool GameScene::CheckGameOver_() const {
+	// HP切れ
+	if (player_->GetHp() <= 0)
+		return true;
+
+	// ステージ外へ落下（水平外 + 上面より下）、またはキルプレーン
+	const auto c = stage_->GetCenterXZ();
+	const float R = stage_->GetRadius();
+	const float pr = player_->GetColliderRadiusXZ();
+	const Vector3& pos = player_->GetWorldTransform().translation_;
+	const float dx = pos.x - c.x;
+	const float dz = pos.z - c.y;
+	const float dist = std::sqrt(dx * dx + dz * dz);
+	const float topY = stage_->GetTopY();
+
+	const bool outsideHoriz = (dist > (R + pr + 0.05f));
+	const bool belowTop = (pos.y < topY - 0.5f);
+	const bool killPlane = (pos.y < topY - 20.0f); // 予備の保険
+
+	if ((outsideHoriz && belowTop) || killPlane)
+		return true;
+	return false;
+}
+
 void GameScene::Update() {
 	imguiMgr_->Begin();
 
-	// カメラ
+	// ① ステージ更新（縮小など）
+	stage_->Update();
+
+	// ② 先に床高さをプレイヤーへ（baseY_更新）
+	player_->SetGroundY(stage_->GetTopY());
+
+	// ③ プレイヤー物理（重力→接地）
+	player_->Update();
+
+	// ④ 当たり（外周クランプ＆最終Yクランプ）
+	ResolvePlayerStageCollision();
+
+	// ⑤ その他
+	magma_->Update();
+	skydome_->Update();
+
+	// ⑥ カメラ
 	playerCamera_->Update();
 	const Camera& viewCam = playerCamera_->GetCamera();
 	camera_.matView = viewCam.matView;
 	camera_.matProjection = viewCam.matProjection;
 	camera_.TransferMatrix();
-
-	// オブジェクト更新
-	player_->Update();
-	stage_->Update();
-	magma_->Update();
-	skydome_->Update();
-
-	// ★ステージとの当たり判定（接地＆円境界）
-	ResolvePlayerStageCollision();
 
 	// === カウントダウン ===
 	countdownSec_ -= (1.0f / 60.0f);
@@ -261,13 +330,40 @@ void GameScene::Update() {
 	// 着弾 or 消費済み のつららを削除
 	icicles_.erase(std::remove_if(icicles_.begin(), icicles_.end(), [](const std::unique_ptr<FallingRock>& r) { return r->HasHitGround() || r->IsConsumed(); }), icicles_.end());
 
-	// 0 になったらクリアへ
-	if (remain <= 0) {
-		sceneNo_ = GAME_CLEAR; // ← enum に合わせて
+	// --- 先にゲームオーバー判定 ---
+	if (CheckGameOver_()) {
+		sceneNo_ = GAME_OVER; // enum の値に合わせて
+	}
+	// --- クリア判定（残り0秒でクリア） ---
+	else if (remain <= 0) {
+		sceneNo_ = GAME_CLEAR;
 	}
 
 	// HPバー追従
 	player_->UpdateHpBar(camera_, kScreenW_, kScreenH_);
+
+	// ===== ImGui デバッグ（高さの見える化 & 調整）=====
+	ImGui::SetNextWindowSize(ImVec2(300, 160), ImGuiCond_FirstUseEver);
+	if (ImGui::Begin("ground & stage debug")) {
+		ImGui::Text("TopY    : %.2f", stage_->GetTopY());
+		ImGui::Text("baseY   : %.2f", player_->GetBaseY());
+		ImGui::Text("PlayerY : %.2f", player_->GetWorldTransform().translation_.y);
+
+		static float uiHalf = 1.0f; // モデルの半高さ
+		static float uiTopO = 0.3f; // 上面オフセット
+		if (ImGui::SliderFloat("stage halfHeight", &uiHalf, 0.0f, 2.0f)) {
+			stage_->SetModelCollisionDims(uiHalf, /*radius*/ 1.0f);
+		}
+		if (ImGui::SliderFloat("stage topYOffset", &uiTopO, -1.0f, 1.0f)) {
+			stage_->SetTopYOffset(uiTopO);
+		}
+
+		static float extra = 0.35f;
+		if (ImGui::SliderFloat("player extraClearance", &extra, 0.0f, 0.8f)) {
+			player_->SetExtraGroundClearance(extra);
+		}
+	}
+	ImGui::End();
 
 	imguiMgr_->End();
 }
@@ -275,6 +371,7 @@ void GameScene::Update() {
 void GameScene::DrawBackGroundSprite() { dxCommon_->ClearDepthBuffer(); }
 
 void GameScene::DrawModel() {
+	// 描画順：Stage → Magma → Marker/Icicle → Player → Skydome
 	stage_->Draw(camera_);
 	magma_->Draw(camera_);
 	for (auto& m : markers_)
@@ -289,10 +386,15 @@ void GameScene::DrawForeGroundSprite() {
 	ID3D12GraphicsCommandList* cl = dxCommon_->GetCommandList();
 	Sprite::PreDraw(cl);
 
-	player_->DrawUI(); // HPバー
+	// プレイヤー頭上のHPバー
+	player_->DrawUI();
+
+	// 右上カウントダウン
 	const int remain = static_cast<int>(std::ceil(countdownSec_));
 	DrawCountdown_Fallback_(remain);
 
 	Sprite::PostDraw();
+
+	// ImGui
 	imguiMgr_->Draw();
 }

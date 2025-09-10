@@ -1,13 +1,28 @@
 #pragma once
 #include "IScene.h"
+#include "KamataEngine.h"
+#include <2d/Sprite.h>
+
 class GameOverScene : public IScene {
 public:
-	~GameOverScene();                    // 解放処理
-	void Init() override;                 // 初期化処理
-	void Update() override;               // 更新処理
-	void DrawBackGroundSprite() override; // 背景の描画処理
-	void DrawForeGroundSprite() override; // 近景の描画処理
-	void DrawModel() override;            // モデルの描画処理
+	~GameOverScene() override;
+	void Init() override;
+	void Update() override;
+	void DrawBackGroundSprite() override;
+	void DrawForeGroundSprite() override;
+	void DrawModel() override;
 
 private:
+	// 基本
+	KamataEngine::DirectXCommon* dxCommon_ = nullptr;
+	KamataEngine::Input* input_ = nullptr;
+	KamataEngine::ImGuiManager* imguiMgr_ = nullptr;
+
+	// 画像
+	uint32_t texGameOver_ = 0;
+	KamataEngine::Sprite* sprGameOver_ = nullptr;
+
+	// 画面サイズ（必要なら変更）
+	static constexpr int kScreenW_ = 1280;
+	static constexpr int kScreenH_ = 720;
 };
