@@ -65,7 +65,7 @@ private:
 	// 5秒間隔でスポーン
 	float spawnTimer_ = 0.0f;
 
-	// 乱数
+	// 乱数//
 	std::mt19937 rng_{std::random_device{}()};
 	std::uniform_real_distribution<float> dist01_{0.0f, 1.0f};
 
