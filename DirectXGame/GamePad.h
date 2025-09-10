@@ -55,7 +55,7 @@ public:
 	KamataEngine::Vector2 GetRightStickState() { return rightStickNorm_; }
 
 	// 各ボタンの状態を受け取る関数
-	Button GetButtonState() { return button_; }
+	//Button GetButtonState() { return button_; }
 
 	const int kStickDeadZoneMax = 32767; // スティックのデッドゾーン最大値
 	const int kTriggerDeadZoneMax = 255; // トリガーのデッドゾーン最大値
