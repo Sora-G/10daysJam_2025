@@ -273,6 +273,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AttackMarker.h" />
+    <ClInclude Include="Collision.h" />
     <ClInclude Include="DevelopScene.h" />
     <ClInclude Include="FallingRock.h" />
     <ClInclude Include="GamePad.h" />

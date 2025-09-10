@@ -22,6 +22,8 @@
 #include "kMath.h"
 #include <2d/Sprite.h>
 
+#include "Collision.h" // AABB
+
 #include <memory>
 #include <random>
 #include <vector>
@@ -30,11 +32,11 @@ class GameScene : public IScene {
 public:
 	~GameScene() override;
 
-	// IScene に準拠
+	// IScene
 	void Init() override;
 	void Update() override;
-	void DrawBackGroundSprite() override; 
-	void DrawForeGroundSprite() override; 
+	void DrawBackGroundSprite() override;
+	void DrawForeGroundSprite() override;
 	void DrawModel() override;
 
 private:
@@ -62,18 +64,21 @@ private:
 	std::vector<std::unique_ptr<AttackMarker>> markers_;
 	std::vector<std::unique_ptr<FallingRock>> icicles_;
 
-	// 5秒間隔でスポーン//
+	// 5秒間隔でスポーン
 	float spawnTimer_ = 0.0f;
 
-	// 乱数//
+	// 乱数
 	std::mt19937 rng_{std::random_device{}()};
 	std::uniform_real_distribution<float> dist01_{0.0f, 1.0f};
 
-	// 白1x1テクスチャ
-	uint32_t whiteTex_ = 0; // 頭上HPバー用
+	// 白1x1テクスチャ（頭上HPバー用）
+	uint32_t whiteTex_ = 0;
 
 private:
 	// --- ヘルパ ---
 	void SpawnMarkerOnStage(float warnSec = 3.0f);
-	void SpawnIcicleAt(const KamataEngine::Vector3& groundPos, float dropHeight = 25.0f);
+	void SpawnIcicleAt(const KamataEngine::Vector3& groundPos, float dropHeight = 40.0f); // ← 高く
+
+	// --- 当たり判定 ---
+	void ResolvePlayerIcicleCollisions();
 };
