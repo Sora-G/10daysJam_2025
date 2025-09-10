@@ -3,7 +3,7 @@
 using namespace KamataEngine;
 
 // シーン番号の初期化
-int IScene::sceneNo_ = DEVELOP;
+int IScene::sceneNo_ = TITLE;
 
 // 仮想デストラクタの定義
 IScene::~IScene() {}

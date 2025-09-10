@@ -1,3 +1,4 @@
+// Player.cpp
 #include "Player.h"
 #include "MathUtilityForText.h"
 
@@ -10,7 +11,7 @@ Player::~Player() {
 
 void Player::Init() {
 	worldTransform_.Initialize();
-	worldTransform_.translation_.y = 25.0f; 
+	worldTransform_.translation_.y = 25.0f;
 	worldTransform_.UpdateMatrix(true);
 
 	model_ = Model::CreateFromOBJ("player");
@@ -20,6 +21,7 @@ void Player::Init() {
 
 	maxHp_ = 100;
 	hp_ = 100;
+	damageCooldown_ = 0.0f;
 }
 
 void Player::InitHpBar(uint32_t whiteTex, const Vector2& size, const Vector3& worldOffset) {
@@ -29,6 +31,13 @@ void Player::InitHpBar(uint32_t whiteTex, const Vector2& size, const Vector3& wo
 
 void Player::Update() {
 	gamePad_->Update(true);
+
+	// 無敵時間の更新
+	if (damageCooldown_ > 0.0f) {
+		damageCooldown_ -= (1.0f / 60.0f);
+		if (damageCooldown_ < 0.0f)
+			damageCooldown_ = 0.0f;
+	}
 
 	// 移動（XZ）
 	Vector3 move{0.0f, 0.0f, 0.0f};
@@ -56,4 +65,11 @@ void Player::Draw(Camera& camera) {
 void Player::DrawUI() {
 	if (hpBar_)
 		hpBar_->Draw();
+}
+
+AABB Player::GetAABB() const {
+	const Vector3 c = worldTransform_.translation_;
+	// プレイヤーのカプセルを「半径×半径×半身長」でAABB近似
+	const Vector3 half = {kRadius_, kHalfHeight_, kRadius_};
+	return AABB{c - half, c + half};
 }
