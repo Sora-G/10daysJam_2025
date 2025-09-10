@@ -17,6 +17,9 @@ public:
 private:
 	GamePad* gamePad_;
 
+	uint32_t bgTex = 0u;
+	Sprite* bg = nullptr;
+
 	uint32_t startTex = 0u;
 	Sprite* logo_ = nullptr;
 

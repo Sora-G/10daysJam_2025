@@ -8,11 +8,14 @@ TitleScene::~TitleScene() {
 }
 
 void TitleScene::Init() {
+	bgTex = TextureManager::Load("./Resources/title/title.png");
+	bg = Sprite::Create(bgTex, {0, 0});
+
 	startTex = TextureManager::Load("./Resources/title/titleTex.png");
 	logo_ = Sprite::Create(startTex, {0, 0});
 
 	startString = TextureManager::Load("./Resources/title/start.png");
-	string_ = Sprite::Create(startTex, {0, 0});
+	string_ = Sprite::Create(startString, {0, 0});
 }
 
 void TitleScene::Update() {
@@ -23,7 +26,7 @@ void TitleScene::Update() {
 	}
 }
 
-void TitleScene::DrawBackGroundSprite() {}
+void TitleScene::DrawBackGroundSprite() { bg->Draw(); }
 
 void TitleScene::DrawForeGroundSprite() {
 	logo_->Draw();
