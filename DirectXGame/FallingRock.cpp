@@ -1,30 +1,43 @@
-// FallingRock.cpp
 #include "FallingRock.h"
+#include "Stage.h"
+#include "kMath.h"
+
 using namespace KamataEngine;
 
-void FallingRock::Initialize(Model* model, const Vector3& start, float speed, float hitY) {
+void FallingRock::Initialize(Model* model, const Vector3& start, float speed, Stage* stage, const Vector3& scale) {
 	model_ = model;
 	fallSpeed_ = speed;
-	hitY_ = hitY;
+	stage_ = stage;
 
 	worldTransform_.Initialize();
 	worldTransform_.translation_ = start;
-	worldTransform_.scale_ = {5.0f, 8.0f, 5.0f}; // 細長い柱（つらら想定）
+
+	// ★見た目スケール（当たりもこれに連動）
+	worldTransform_.scale_ = scale; // 例 {8,5,8}
 	worldTransform_.UpdateMatrix(true);
 
 	hitGround_ = false;
 	consumed_ = false;
+
+	// 必要ならここでローカル基準や補正を個別設定
+	// SetColliderModelUnit(0.5f, 0.5f); // デフォルトは 0.5/0.5
+	// SetColliderFudge(1.0f, 1.0f);
 }
 
 void FallingRock::Update() {
 	if (hitGround_)
 		return;
 
+	// 落下
 	worldTransform_.translation_.y -= fallSpeed_ * (1.0f / 60.0f);
-	if (worldTransform_.translation_.y <= hitY_) {
-		worldTransform_.translation_.y = hitY_;
+
+	// ★ ステージの現在TopYに追従（縮小中でもOK）
+	const float topY = stage_ ? stage_->GetTopY() : 0.0f;
+	if (worldTransform_.translation_.y <= topY) {
+		worldTransform_.translation_.y = topY;
 		hitGround_ = true;
 	}
+
 	worldTransform_.UpdateMatrix(true);
 }
 
@@ -35,12 +48,11 @@ void FallingRock::Draw(Camera& camera) {
 
 AABB FallingRock::GetAABB() const {
 	const Vector3 c = worldTransform_.translation_;
-	const Vector3 half = {std::abs(worldTransform_.scale_.x) * 0.5f, std::abs(worldTransform_.scale_.y) * 0.5f, std::abs(worldTransform_.scale_.z) * 0.5f};
 
-	const float margin = 0.02f;
+	// ★ スケール連動の半径・半高さ
+	const float radXZ = baseRadiusLocal_ * xzMul_ * std::max(worldTransform_.scale_.x, worldTransform_.scale_.z);
+	const float halfY = baseHalfHeightLocal_ * yMul_ * worldTransform_.scale_.y;
 
-	Vector3 min{c.x - (half.x + margin), c.y - (half.y + margin), c.z - (half.z + margin)};
-	Vector3 max{c.x + (half.x + margin), c.y + (half.y + margin), c.z + (half.z + margin)};
-
-	return AABB{min, max};
+	const Vector3 half = {radXZ, halfY, radXZ};
+	return AABB{c - half, c + half};
 }

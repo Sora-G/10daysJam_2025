@@ -26,20 +26,7 @@ void GamePad::Update(bool isDebugView) {
 	if (isDebugView_ == true) {
 		// ImGuiデバッグ
 		ImGui::SetNextWindowSize(ImVec2(200, 300), 1);
-		ImGui::Begin("gamePad debug window");
-
-		if (dwResult_ == ERROR_SUCCESS) {
-			ImGui::Text("gamePad is connected");
-		} else {
-			ImGui::Text("gamePad is disconnected");
-		}
-
-		ImGui::Text("Left  : [%6d , %6d]", leftStick_.x, leftStick_.y);
-		ImGui::Text("Right : [%6d , %6d]", rightStick_.x, rightStick_.y);
-		ImGui::Text("NLeft  : [%5.2f , %5.2f]", leftStickNorm_.x, leftStickNorm_.y);
-		ImGui::Text("NRight : [%5.2f , %5.2f]", rightStickNorm_.x, rightStickNorm_.y);
-
-		ImGui::End();
+		
 	}
 }
 

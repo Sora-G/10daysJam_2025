@@ -78,6 +78,8 @@ void GameScene::Init() {
 	// ステージ
 	stage_ = new Stage();
 	stage_->Initialize(modelStage_);
+	// Blender の「直径=10m 高さ=10m」を OBJ 化 → そのまま縮小を内部管理
+	// 物理基準（1.0 = モデル半径/半高さ）を指定：今回は 5m 相当を 1.0 とする
 	stage_->SetModelCollisionUnit(5.0f, 5.0f);
 
 	// マグマ
@@ -96,7 +98,7 @@ void GameScene::Init() {
 		player_->SetExtraGroundClearance(0.35f); // 見た目の浮き
 		player_->SetGroundY(surfaceY);           // baseY を確定
 
-		const float spawnAbove = 25.0f; // デバッグ時は 30.0f でもOK
+		const float spawnAbove = 25.0f; // デバッグで見やすく上から
 		player_->SetPositionXZ(center.x, center.y);
 		player_->SetPositionY(player_->GetBaseY() + spawnAbove);
 		player_->ForceUpdateMatrix();
@@ -129,6 +131,7 @@ void GameScene::SpawnMarkerOnStage(float warnSec) {
 	const float stageR = stage_->GetRadius();
 	const float yawRad = stage_->GetYawRad();
 
+	// 円内一様
 	const float margin = stageR * 0.12f;
 	const float usableR = std::fmax(stageR - margin, 0.0f);
 
@@ -154,7 +157,9 @@ void GameScene::SpawnIcicleAt(const Vector3& groundPos, float dropHeight) {
 	Vector3 start{groundPos.x, topY + dropHeight, groundPos.z};
 
 	auto rock = std::make_unique<FallingRock>();
-	rock->Initialize(modelIcicle_, start, /*speed=*/30.0f, /*hitY=*/topY);
+	// ★ ここが重要：hitY ではなく Stage* を渡す（FallingRock 側で毎フレ topY 参照）
+	//     スケールは FallingRock::Initialize のデフォルト {8,5,8} が使われます
+	rock->Initialize(modelIcicle_, start, /*speed=*/30.0f, /*stage=*/stage_);
 	icicles_.push_back(std::move(rock));
 }
 
@@ -166,7 +171,7 @@ void GameScene::ResolvePlayerStageCollision() {
 
 	// 2) 円境界クランプ（ステージ外へ出ない）
 	const auto c = stage_->GetCenterXZ();            // x=中心X, y=中心Z
-	const float R = stage_->GetRadius();             // ステージ半径
+	const float R = stage_->GetRadius();             // ステージ半径（縮小に追従）
 	const float pr = player_->GetColliderRadiusXZ(); // プレイヤー半径
 
 	const Vector3& pos = player_->GetWorldTransform().translation_;
@@ -190,7 +195,7 @@ void GameScene::ResolvePlayerStageCollision() {
 		}
 	}
 
-	// 3) ★最終ガード：どんな状況でも“床より下”は禁止
+	// 3) 最終ガード：床より下は禁止
 	const float baseY = player_->GetBaseY();
 	const float py = player_->GetWorldTransform().translation_.y;
 	if (py < baseY) {
@@ -302,6 +307,7 @@ void GameScene::Update() {
 		m->SetTopY(topY);
 		m->Update();
 		if (m->IsExpired()) {
+			// FallingRock は Stage* を受け取り、TopY に追従して落下
 			SpawnIcicleAt(m->GetPosition(), /*dropHeight=*/40.0f);
 		}
 	}
@@ -328,19 +334,6 @@ void GameScene::Update() {
 
 	// HPバー追従
 	player_->UpdateHpBar(camera_, kScreenW_, kScreenH_);
-
-	// ===== ImGui デバッグ（任意）=====
-	ImGui::SetNextWindowSize(ImVec2(280, 120), ImGuiCond_FirstUseEver);
-	if (ImGui::Begin("ground dbg")) {
-		ImGui::Text("TopY    : %.2f", stage_->GetTopY());
-		ImGui::Text("baseY   : %.2f", player_->GetBaseY());
-		ImGui::Text("PlayerY : %.2f", player_->GetWorldTransform().translation_.y);
-		static float extra = 0.35f;
-		if (ImGui::SliderFloat("extraClearance", &extra, 0.0f, 0.8f)) {
-			player_->SetExtraGroundClearance(extra);
-		}
-	}
-	ImGui::End();
 
 	imguiMgr_->End();
 }
