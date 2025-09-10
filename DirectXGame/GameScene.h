@@ -93,6 +93,8 @@ private:
 
 	// --- 当たり判定 ---
 	void ResolvePlayerIcicleCollisions();
+	// ★追加：Player×Stage の当たり判定（接地＆円境界押し戻し）
+	void ResolvePlayerStageCollision();
 
 	// --- カウントダウン表示 ---
 	void InitCountdownSprites_Fallback_();

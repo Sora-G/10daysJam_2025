@@ -16,24 +16,20 @@ using namespace KamataEngine;
 
 // ===== カウントダウン初期化（UV不要版） =====
 void GameScene::InitCountdownSprites_Fallback_() {
-	// 0〜9の画像をロードし、十/一の位用スプライトをあらかじめ作成
 	for (int i = 0; i < 10; ++i) {
 		std::string path = "./Resources/number/" + std::to_string(i) + ".png";
 		digitTex_[i] = TextureManager::Load(path.c_str());
 
-		// 一の位（右）
 		onesSpr_[i] = Sprite::Create(digitTex_[i], {0.0f, 0.0f});
 		onesSpr_[i]->SetSize({kDigitDrawW_, kDigitDrawH_});
 		onesSpr_[i]->SetPosition({kScreenW_ - 24.0f - kDigitDrawW_, 16.0f});
 
-		// 十の位（左）
 		tensSpr_[i] = Sprite::Create(digitTex_[i], {0.0f, 0.0f});
 		tensSpr_[i]->SetSize({kDigitDrawW_, kDigitDrawH_});
 		tensSpr_[i]->SetPosition({kScreenW_ - 24.0f - kDigitDrawW_ * 2.0f, 16.0f});
 	}
 }
 
-// ===== 指定秒（0〜99）を2桁で描画 =====
 void GameScene::DrawCountdown_Fallback_(int remainSec) {
 	remainSec = std::clamp(remainSec, 0, 99);
 	const int tens = remainSec / 10;
@@ -45,13 +41,11 @@ void GameScene::DrawCountdown_Fallback_(int remainSec) {
 }
 
 GameScene::~GameScene() {
-	// カウントダウン用スプライト解放
 	for (int i = 0; i < 10; ++i) {
 		delete tensSpr_[i];
 		delete onesSpr_[i];
 		tensSpr_[i] = onesSpr_[i] = nullptr;
 	}
-	// 既存オブジェクト解放
 	delete stage_;
 	delete magma_;
 	delete player_;
@@ -87,6 +81,9 @@ void GameScene::Init() {
 	player_ = new Player();
 	player_->Init();
 
+
+	player_->SetGroundY(stage_->GetTopY()); // 位置は変えず、接地基準だけセット
+
 	// 頭上HPバー
 	whiteTex_ = TextureManager::Load("./Resources/white1x1.png");
 	player_->InitHpBar(whiteTex_, {120.0f, 15.0f}, {0.0f, 3.3f, 0.0f});
@@ -114,7 +111,6 @@ void GameScene::SpawnMarkerOnStage(float warnSec) {
 	const float stageR = stage_->GetRadius();
 	const float yawRad = stage_->GetYawRad();
 
-	// 円内一様
 	const float margin = stageR * 0.12f;
 	const float usableR = std::fmax(stageR - margin, 0.0f);
 
@@ -142,6 +138,39 @@ void GameScene::SpawnIcicleAt(const Vector3& groundPos, float dropHeight) {
 	auto rock = std::make_unique<FallingRock>();
 	rock->Initialize(modelIcicle_, start, /*speed=*/30.0f, /*hitY=*/topY);
 	icicles_.push_back(std::move(rock));
+}
+
+// ★ Player×Stage（接地＆円境界押し戻し）
+void GameScene::ResolvePlayerStageCollision() {
+	// 一時的にステージ上面に 0.30f 持ち上げてみる
+	const float surfaceY = stage_->GetTopY() + 2.0f; // ← ここを変えるだけでもOK
+	player_->SetGroundY(surfaceY);
+
+	// 横方向：ステージ円境界内にクランプ
+	const auto c = stage_->GetCenterXZ();            // x=中心X, y=中心Z
+	const float R = stage_->GetRadius();             // ステージ半径
+	const float pr = player_->GetColliderRadiusXZ(); // プレイヤー半径
+
+	const Vector3& pos = player_->GetWorldTransform().translation_;
+	const float dx = pos.x - c.x;
+	const float dz = pos.z - c.y; // center.y は Z
+	const float dist2 = dx * dx + dz * dz;
+	const float maxDist = std::max(R - pr, 0.0f);
+
+	if (dist2 > maxDist * maxDist) {
+		const float dist = std::sqrt(dist2);
+		if (dist > 1e-5f) {
+			const float nx = dx / dist;
+			const float nz = dz / dist;
+			const float clampX = c.x + nx * maxDist;
+			const float clampZ = c.y + nz * maxDist;
+			player_->SetPositionXZ(clampX, clampZ);
+			player_->ForceUpdateMatrix();
+		} else {
+			player_->SetPositionXZ(c.x, c.y + maxDist);
+			player_->ForceUpdateMatrix();
+		}
+	}
 }
 
 // 円×高さ＋少しパディングで判定（ヒット時10ダメージ）
@@ -195,6 +224,9 @@ void GameScene::Update() {
 	magma_->Update();
 	skydome_->Update();
 
+	// ★ステージとの当たり判定（接地＆円境界）
+	ResolvePlayerStageCollision();
+
 	// === カウントダウン ===
 	countdownSec_ -= (1.0f / 60.0f);
 	if (countdownSec_ < 0.0f)
@@ -223,7 +255,7 @@ void GameScene::Update() {
 	for (auto& i : icicles_)
 		i->Update();
 
-	// 当たり判定
+	// 当たり判定（つらら）
 	ResolvePlayerIcicleCollisions();
 
 	// 着弾 or 消費済み のつららを削除
@@ -231,7 +263,7 @@ void GameScene::Update() {
 
 	// 0 になったらクリアへ
 	if (remain <= 0) {
-		sceneNo_ = GAME_CLEAR; // ← あなたの enum 名に合わせてください
+		sceneNo_ = GAME_CLEAR; // ← enum に合わせて
 	}
 
 	// HPバー追従
@@ -243,7 +275,6 @@ void GameScene::Update() {
 void GameScene::DrawBackGroundSprite() { dxCommon_->ClearDepthBuffer(); }
 
 void GameScene::DrawModel() {
-	// 描画順：Stage → Magma → Marker/Icicle → Player → Skydome
 	stage_->Draw(camera_);
 	magma_->Draw(camera_);
 	for (auto& m : markers_)
@@ -258,15 +289,10 @@ void GameScene::DrawForeGroundSprite() {
 	ID3D12GraphicsCommandList* cl = dxCommon_->GetCommandList();
 	Sprite::PreDraw(cl);
 
-	// プレイヤー頭上のHPバー
-	player_->DrawUI();
-
-	// 右上カウントダウン
+	player_->DrawUI(); // HPバー
 	const int remain = static_cast<int>(std::ceil(countdownSec_));
 	DrawCountdown_Fallback_(remain);
 
 	Sprite::PostDraw();
-
-	// ImGui
 	imguiMgr_->Draw();
 }

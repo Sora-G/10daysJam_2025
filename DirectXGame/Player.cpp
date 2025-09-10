@@ -1,6 +1,6 @@
 #include "Player.h"
 #include "MathUtilityForText.h"
-#include <imgui.h> // マウスのデルタ取得（ImGui::GetIO().MouseDelta）
+#include <imgui.h> // ImGui::GetIO().MouseDelta
 
 using namespace KamataEngine;
 
@@ -11,7 +11,7 @@ Player::~Player() {
 
 void Player::Init() {
 	worldTransform_.Initialize();
-	worldTransform_.translation_.y = 25.0f; // 既存開始高さ
+	worldTransform_.translation_.y = 25.0f; // 仮の開始高さ（後でスナップ）
 	worldTransform_.rotation_ = {0.0f, 0.0f, 0.0f};
 	worldTransform_.UpdateMatrix(true);
 
@@ -25,7 +25,7 @@ void Player::Init() {
 	damageCooldown_ = 0.0f;
 
 	// ジャンプ/重力
-	baseY_ = worldTransform_.translation_.y; // 今の高さを地面扱い
+	baseY_ = worldTransform_.translation_.y; // とりあえず今の高さを「地面」としておく
 	velY_ = 0.0f;
 	onGround_ = true;
 
@@ -55,9 +55,7 @@ void Player::Update() {
 	// ===== マウスで視点（Yaw）回転：常時 =====
 	{
 		ImGuiIO& io = ImGui::GetIO();
-		// UI操作中は回したくない場合はブロック
 		if (!io.WantCaptureMouse) {
-			// 右に動かすと右回転（手前向き右手系なら符号入替で調整）
 			yawRad_ += io.MouseDelta.x * kMouseYawSensitivity_;
 		}
 	}
@@ -66,13 +64,13 @@ void Player::Update() {
 	// ===== 横移動（プレイヤーの向き基準：ローカル→ワールド） =====
 	Vector3 localMove{0.0f, 0.0f, 0.0f};
 
-	// キーボード（W前・S後・A左・D右）
+	// キーボード（W前・S後・A左・D右）※現行符号に合わせています
 	if (in->PushKey(DIK_A))
 		localMove.x -= kMoveSpeedKeys_;
 	if (in->PushKey(DIK_D))
 		localMove.x += kMoveSpeedKeys_;
 	if (in->PushKey(DIK_S))
-		localMove.z -= kMoveSpeedKeys_; // 前 = -Z と仮定
+		localMove.z -= kMoveSpeedKeys_; // 前 = -Z
 	if (in->PushKey(DIK_W))
 		localMove.z += kMoveSpeedKeys_; // 後 = +Z
 
@@ -95,7 +93,7 @@ void Player::Update() {
 	velY_ += kGravity_ * dt;
 	worldTransform_.translation_.y += velY_ * dt;
 
-	// 接地（Init時の高さを地面扱い）
+	// 接地（baseY_ を基準に）
 	if (worldTransform_.translation_.y <= baseY_) {
 		worldTransform_.translation_.y = baseY_;
 		velY_ = 0.0f;
@@ -128,3 +126,36 @@ AABB Player::GetAABB() const {
 	const Vector3 half = {kRadius_, kHalfHeight_, kRadius_};
 	return AABB{c - half, c + half};
 }
+
+// ===== ここから追加実装 =====
+
+// ステージ上面Yを渡すと、センターの接地Yを surfaceY + 半身長 に設定
+void Player::SetGroundY(float surfaceY) {
+	// 基準 = ステージ上面 + 半身長 + クリアランス
+	const float newBase = surfaceY + kHalfHeight_ + kGroundClearance_; // ← ここに +kGroundClearance_ が入っているか確認
+	if (worldTransform_.translation_.y > newBase + 1e-4f)
+		onGround_ = false;
+	baseY_ = newBase;
+
+	if (worldTransform_.translation_.y < baseY_) {
+		worldTransform_.translation_.y = baseY_;
+		velY_ = 0.0f;
+		onGround_ = true;
+		worldTransform_.UpdateMatrix(true);
+	}
+}
+
+// 初期配置などで「今すぐ地面に乗せたい」時に呼ぶ
+void Player::SnapToGround() {
+	worldTransform_.translation_.y = baseY_;
+	velY_ = 0.0f;
+	onGround_ = true;
+	worldTransform_.UpdateMatrix(true);
+}
+
+void Player::SetPositionXZ(float x, float z) {
+	worldTransform_.translation_.x = x;
+	worldTransform_.translation_.z = z;
+}
+
+void Player::ForceUpdateMatrix() { worldTransform_.UpdateMatrix(true); }
