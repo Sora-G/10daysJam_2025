@@ -1,13 +1,20 @@
 #pragma once
 #include "IScene.h"
+#include "KamataEngine.h"
+#include <2d/Sprite.h>
+#include <base/DirectXCommon.h>
+
 class GameClearScene : public IScene {
 public:
-	~GameClearScene();                        // 解放処理
-	void Init() override;                 // 初期化処理
-	void Update() override;               // 更新処理
-	void DrawBackGroundSprite() override; // 背景の描画処理
-	void DrawForeGroundSprite() override; // 近景の描画処理
-	void DrawModel() override;            // モデルの描画処理
+	~GameClearScene() override;
+	void Init() override;
+	void Update() override;
+	void DrawBackGroundSprite() override;
+	void DrawForeGroundSprite() override;
+	void DrawModel() override;
 
 private:
+	uint32_t clearTex_ = 0;
+	KamataEngine::Sprite* clearSprite_ = nullptr;
+	float waitSec_ = 0.0f; // 表示後の待ち時間（キースキップ可）
 };

@@ -3,8 +3,8 @@
 #include <base/TextureManager.h>
 #include <cassert>
 #include <cmath>
+#include <string>
 
-// Windows の max/min マクロ対策
 #ifdef max
 #undef max
 #endif
@@ -14,7 +14,44 @@
 
 using namespace KamataEngine;
 
+// ===== カウントダウン初期化（UV不要版） =====
+void GameScene::InitCountdownSprites_Fallback_() {
+	// 0〜9の画像をロードし、十/一の位用スプライトをあらかじめ作成
+	for (int i = 0; i < 10; ++i) {
+		std::string path = "./Resources/number/" + std::to_string(i) + ".png";
+		digitTex_[i] = TextureManager::Load(path.c_str());
+
+		// 一の位（右）
+		onesSpr_[i] = Sprite::Create(digitTex_[i], {0.0f, 0.0f});
+		onesSpr_[i]->SetSize({kDigitDrawW_, kDigitDrawH_});
+		onesSpr_[i]->SetPosition({kScreenW_ - 24.0f - kDigitDrawW_, 16.0f});
+
+		// 十の位（左）
+		tensSpr_[i] = Sprite::Create(digitTex_[i], {0.0f, 0.0f});
+		tensSpr_[i]->SetSize({kDigitDrawW_, kDigitDrawH_});
+		tensSpr_[i]->SetPosition({kScreenW_ - 24.0f - kDigitDrawW_ * 2.0f, 16.0f});
+	}
+}
+
+// ===== 指定秒（0〜99）を2桁で描画 =====
+void GameScene::DrawCountdown_Fallback_(int remainSec) {
+	remainSec = std::clamp(remainSec, 0, 99);
+	const int tens = remainSec / 10;
+	const int ones = remainSec % 10;
+	if (tensSpr_[tens])
+		tensSpr_[tens]->Draw();
+	if (onesSpr_[ones])
+		onesSpr_[ones]->Draw();
+}
+
 GameScene::~GameScene() {
+	// カウントダウン用スプライト解放
+	for (int i = 0; i < 10; ++i) {
+		delete tensSpr_[i];
+		delete onesSpr_[i];
+		tensSpr_[i] = onesSpr_[i] = nullptr;
+	}
+	// 既存オブジェクト解放
 	delete stage_;
 	delete magma_;
 	delete player_;
@@ -63,6 +100,10 @@ void GameScene::Init() {
 	skydome_ = new Skydome();
 	skydome_->Initialize();
 
+	// カウントダウン初期化
+	countdownSec_ = 60.0f;
+	InitCountdownSprites_Fallback_();
+
 	// 初回マーカー
 	SpawnMarkerOnStage(3.0f);
 }
@@ -96,39 +137,33 @@ void GameScene::SpawnMarkerOnStage(float warnSec) {
 
 void GameScene::SpawnIcicleAt(const Vector3& groundPos, float dropHeight) {
 	const float topY = stage_->GetTopY();
-	Vector3 start{groundPos.x, topY + dropHeight, groundPos.z}; // ← 高めから落とす(既定40)
+	Vector3 start{groundPos.x, topY + dropHeight, groundPos.z};
 
 	auto rock = std::make_unique<FallingRock>();
 	rock->Initialize(modelIcicle_, start, /*speed=*/30.0f, /*hitY=*/topY);
 	icicles_.push_back(std::move(rock));
 }
 
-// Player と FallingRock の当たり判定
+// 円×高さ＋少しパディングで判定（ヒット時10ダメージ）
 void GameScene::ResolvePlayerIcicleCollisions() {
-	// Player AABB から中心と半径・半高さを取得
 	const AABB pBox = player_->GetAABB();
-	const KamataEngine::Vector3 pC{(pBox.min.x + pBox.max.x) * 0.5f, (pBox.min.y + pBox.max.y) * 0.5f, (pBox.min.z + pBox.max.z) * 0.5f};
+	const Vector3 pC{(pBox.min.x + pBox.max.x) * 0.5f, (pBox.min.y + pBox.max.y) * 0.5f, (pBox.min.z + pBox.max.z) * 0.5f};
 	const float pHalfY = (pBox.max.y - pBox.min.y) * 0.5f;
-	const float pRadXZ = (pBox.max.x - pBox.min.x) * 0.5f; // XZの半径近似
+	const float pRadXZ = (pBox.max.x - pBox.min.x) * 0.5f;
 
-	// すり抜け防止の当たり判定パディング
-	constexpr float EXTRA_PAD_XZ = 0.20f; // 横方向にゆとり
-	constexpr float EXTRA_PAD_Y = 0.10f;  // 縦方向にゆとり
+	constexpr float EXTRA_PAD_XZ = 0.20f;
+	constexpr float EXTRA_PAD_Y = 0.10f;
 
 	for (auto& uptr : icicles_) {
 		FallingRock& rock = *uptr;
-		if (rock.HasHitGround())
-			continue;
-		if (rock.IsConsumed())
+		if (rock.HasHitGround() || rock.IsConsumed())
 			continue;
 
-		// Icicle AABB → 中心・半径・半高さ
 		const AABB rBox = rock.GetAABB();
-		const KamataEngine::Vector3 rC{(rBox.min.x + rBox.max.x) * 0.5f, (rBox.min.y + rBox.max.y) * 0.5f, (rBox.min.z + rBox.max.z) * 0.5f};
+		const Vector3 rC{(rBox.min.x + rBox.max.x) * 0.5f, (rBox.min.y + rBox.max.y) * 0.5f, (rBox.min.z + rBox.max.z) * 0.5f};
 		const float rHalfY = (rBox.max.y - rBox.min.y) * 0.5f;
 		const float rRadXZ = (rBox.max.x - rBox.min.x) * 0.5f;
 
-		// --- 円×高さの判定 ---
 		const float dx = pC.x - rC.x;
 		const float dz = pC.z - rC.z;
 		const float dist2 = dx * dx + dz * dz;
@@ -138,9 +173,8 @@ void GameScene::ResolvePlayerIcicleCollisions() {
 		const bool vertHit = (std::abs(pC.y - rC.y) <= (pHalfY + rHalfY + EXTRA_PAD_Y));
 
 		if (horizHit && vertHit) {
-			// 常に10ダメージ
 			player_->Damage(10);
-			rock.Consume(); // 多重ヒット防止
+			rock.Consume();
 		}
 	}
 }
@@ -148,7 +182,7 @@ void GameScene::ResolvePlayerIcicleCollisions() {
 void GameScene::Update() {
 	imguiMgr_->Begin();
 
-	// PlayerCamera → camera_ へ反映
+	// カメラ
 	playerCamera_->Update();
 	const Camera& viewCam = playerCamera_->GetCamera();
 	camera_.matView = viewCam.matView;
@@ -161,7 +195,13 @@ void GameScene::Update() {
 	magma_->Update();
 	skydome_->Update();
 
-	// 5秒間隔でマーカー出現
+	// === カウントダウン ===
+	countdownSec_ -= (1.0f / 60.0f);
+	if (countdownSec_ < 0.0f)
+		countdownSec_ = 0.0f;
+	const int remain = static_cast<int>(std::ceil(countdownSec_)); // 60→59→…→0
+
+	// 5秒ごとにマーカー出現
 	spawnTimer_ += 1.0f / 60.0f;
 	if (spawnTimer_ >= 5.0f) {
 		spawnTimer_ = 0.0f;
@@ -174,17 +214,14 @@ void GameScene::Update() {
 		m->SetTopY(topY);
 		m->Update();
 		if (m->IsExpired()) {
-			// ← 落下高さを高めに（既定 40.0f)///
 			SpawnIcicleAt(m->GetPosition(), /*dropHeight=*/40.0f);
 		}
 	}
-	// 期限切れマーカー削除
 	markers_.erase(std::remove_if(markers_.begin(), markers_.end(), [](const std::unique_ptr<AttackMarker>& p) { return p->IsExpired(); }), markers_.end());
 
 	// つらら更新
-	for (auto& i : icicles_) {
+	for (auto& i : icicles_)
 		i->Update();
-	}
 
 	// 当たり判定
 	ResolvePlayerIcicleCollisions();
@@ -192,10 +229,13 @@ void GameScene::Update() {
 	// 着弾 or 消費済み のつららを削除
 	icicles_.erase(std::remove_if(icicles_.begin(), icicles_.end(), [](const std::unique_ptr<FallingRock>& r) { return r->HasHitGround() || r->IsConsumed(); }), icicles_.end());
 
-	// 頭上HPバー追従
-	constexpr int kScreenW = 1280;
-	constexpr int kScreenH = 720;
-	player_->UpdateHpBar(camera_, kScreenW, kScreenH);
+	// 0 になったらクリアへ
+	if (remain <= 0) {
+		sceneNo_ = GAME_CLEAR; // ← あなたの enum 名に合わせてください
+	}
+
+	// HPバー追従
+	player_->UpdateHpBar(camera_, kScreenW_, kScreenH_);
 
 	imguiMgr_->End();
 }
@@ -206,12 +246,10 @@ void GameScene::DrawModel() {
 	// 描画順：Stage → Magma → Marker/Icicle → Player → Skydome
 	stage_->Draw(camera_);
 	magma_->Draw(camera_);
-	for (auto& m : markers_) {
+	for (auto& m : markers_)
 		m->Draw(camera_);
-	}
-	for (auto& i : icicles_) {
+	for (auto& i : icicles_)
 		i->Draw(camera_);
-	}
 	player_->Draw(camera_);
 	skydome_->Draw(camera_);
 }
@@ -222,6 +260,10 @@ void GameScene::DrawForeGroundSprite() {
 
 	// プレイヤー頭上のHPバー
 	player_->DrawUI();
+
+	// 右上カウントダウン
+	const int remain = static_cast<int>(std::ceil(countdownSec_));
+	DrawCountdown_Fallback_(remain);
 
 	Sprite::PostDraw();
 

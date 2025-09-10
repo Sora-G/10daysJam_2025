@@ -74,11 +74,27 @@ private:
 	// 白1x1テクスチャ（頭上HPバー用）
 	uint32_t whiteTex_ = 0;
 
+	// ===== 右上カウントダウン（UV不要方式） =====
+	float countdownSec_ = 60.0f;                    // 60 → 0
+	uint32_t digitTex_[10] = {};                    // ./Resources/number/0.png ～ 9.png
+	KamataEngine::Sprite* tensSpr_[10] = {nullptr}; // 十の位 0～9
+	KamataEngine::Sprite* onesSpr_[10] = {nullptr}; // 一の位 0～9
+
+	// 画面サイズ・数字の描画サイズ（必要に応じて調整）
+	static constexpr int kScreenW_ = 1280;
+	static constexpr int kScreenH_ = 720;
+	static constexpr float kDigitDrawW_ = 48.0f; // 表示幅
+	static constexpr float kDigitDrawH_ = 96.0f; // 表示高
+
 private:
 	// --- ヘルパ ---
 	void SpawnMarkerOnStage(float warnSec = 3.0f);
-	void SpawnIcicleAt(const KamataEngine::Vector3& groundPos, float dropHeight = 40.0f); // ← 高く
+	void SpawnIcicleAt(const KamataEngine::Vector3& groundPos, float dropHeight = 40.0f); // 高めから落とす
 
 	// --- 当たり判定 ---
 	void ResolvePlayerIcicleCollisions();
+
+	// --- カウントダウン表示 ---
+	void InitCountdownSprites_Fallback_();
+	void DrawCountdown_Fallback_(int remainSec);
 };
