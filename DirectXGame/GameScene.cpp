@@ -335,7 +335,7 @@ void GameScene::Update() {
 	// HPバー追従
 	player_->UpdateHpBar(camera_, kScreenW_, kScreenH_);
 
-	imguiMgr_->End();
+	imguiMgr_->End(); 
 }
 
 void GameScene::DrawBackGroundSprite() { dxCommon_->ClearDepthBuffer(); }
