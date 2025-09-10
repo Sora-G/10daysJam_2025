@@ -10,7 +10,11 @@ SceneManager::SceneManager() {
 
 	sceneArr_[0] = std::make_unique<DevelopScene>();
 	sceneArr_[1] = std::make_unique<TitleScene>();
-	sceneArr_[2] = std::make_unique<GameScene>();
+	sceneArr_[2] = std::make_unique<RuleScene1>();
+	sceneArr_[3] = std::make_unique<RuleScene2>();
+	sceneArr_[4] = std::make_unique<GameScene>();
+	sceneArr_[5] = std::make_unique<GameClearScene>();
+	sceneArr_[5] = std::make_unique<GameOverScene>();
 
 	// 初期シーンの設定
 	currentSceneNo_ = DEVELOP;
