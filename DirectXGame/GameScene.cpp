@@ -55,6 +55,12 @@ GameScene::~GameScene() {
 	delete player_;
 	delete playerCamera_;
 	delete skydome_;
+
+	delete modelBrast_;
+	for (BrastEffect* brast : brast_) {
+		delete brast;
+	}
+	brast_.clear();
 }
 
 void GameScene::Init() {
@@ -123,6 +129,20 @@ void GameScene::Init() {
 
 	// 初回マーカー
 	SpawnMarkerOnStage(3.0f);
+
+	modelBrast_ = Model::CreateFromOBJ("cube", false);
+
+	for (int i = 0; i < 50; i++) {
+		BrastEffect* brast = new BrastEffect();
+
+		Vector3 position = {0.0f, 0.0f, 0.0f};
+
+		brastVelocity = {distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)};
+
+		brast->Initialize(modelBrast_, position, brastVelocity);
+
+		brast_.push_back(brast);
+	}
 }
 
 void GameScene::SpawnMarkerOnStage(float warnSec) {
@@ -316,6 +336,7 @@ void GameScene::Update() {
 	// つらら更新
 	for (auto& i : icicles_)
 		i->Update();
+#pragma endregion
 
 	// 当たり判定（つらら）
 	ResolvePlayerIcicleCollisions();

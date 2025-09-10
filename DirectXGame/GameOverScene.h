@@ -1,6 +1,10 @@
 #pragma once
 #include "IScene.h"
 #include "KamataEngine.h"
+
+using namespace KamataEngine;
+
+#include "KamataEngine.h"
 #include <2d/Sprite.h>
 
 class GameOverScene : public IScene {
@@ -13,6 +17,8 @@ public:
 	void DrawModel() override;
 
 private:
+	uint32_t overTex = 0u;
+	Sprite* logo_ = nullptr;
 	// 基本
 	KamataEngine::DirectXCommon* dxCommon_ = nullptr;
 	KamataEngine::Input* input_ = nullptr;

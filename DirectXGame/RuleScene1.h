@@ -10,4 +10,6 @@ public:
 	void DrawModel() override;            // モデルの描画処理
 
 private:
+	uint32_t ruleTexture_;
+	KamataEngine::Sprite* sprite_;
 };

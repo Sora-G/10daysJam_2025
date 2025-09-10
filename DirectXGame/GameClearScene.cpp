@@ -4,6 +4,10 @@
 
 using namespace KamataEngine;
 
+void GameClearScene::Init() {
+	clearTex = TextureManager::Load("./Resources/clearTex.png");
+	logo_ = Sprite::Create(clearTex, {0, 0});
+}
 GameClearScene::~GameClearScene() {
 	delete clearSprite_;
 	clearSprite_ = nullptr;
@@ -28,12 +32,13 @@ void GameClearScene::Update() {
 	auto* in = Input::GetInstance();
 	bool any = in->TriggerKey(DIK_SPACE) || in->TriggerKey(DIK_RETURN);
 	if (any && waitSec_ > 0.2f) {
-		sceneNo_ = TITLE; // ← 戻り先（必要なら Rule1 等に変更）
+		sceneNo_ = TITLE; // �� �߂��i�K�v�Ȃ� Rule1 ���ɕύX�j
 	}
 }
 
 void GameClearScene::DrawBackGroundSprite() {}
 
+void GameClearScene::DrawForeGroundSprite() { logo_->Draw(); }
 void GameClearScene::DrawModel() {}
 
 void GameClearScene::DrawForeGroundSprite() {

@@ -155,8 +155,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AttackMarker.cpp" />
-    <ClCompile Include="Collision.cpp" />
+    <ClCompile Include="BrastEffect.cpp" />
     <ClCompile Include="DevelopScene.cpp" />
+    <ClCompile Include="Easing.cpp" />
     <ClCompile Include="FallingRock.cpp" />
     <ClCompile Include="GameClearScene.cpp" />
     <ClCompile Include="GameOverScene.cpp" />
@@ -278,8 +279,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AttackMarker.h" />
+    <ClInclude Include="BrastEffect.h" />
     <ClInclude Include="Collision.h" />
     <ClInclude Include="DevelopScene.h" />
+    <ClInclude Include="Easing.h" />
     <ClInclude Include="FallingRock.h" />
     <ClInclude Include="GameClearScene.h" />
     <ClInclude Include="GameOverScene.h" />

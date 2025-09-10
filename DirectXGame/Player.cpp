@@ -37,6 +37,7 @@ void Player::InitHpBar(uint32_t whiteTex, const Vector2& size, const Vector3& wo
 }
 
 void Player::Update() {
+	gamePad_->Update(false);
 	constexpr float dt = 1.0f / 60.0f;
 
 	// 入力更新
