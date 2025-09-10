@@ -9,7 +9,7 @@ void FallingRock::Initialize(Model* model, const Vector3& start, float speed, fl
 
 	worldTransform_.Initialize();
 	worldTransform_.translation_ = start;
-	worldTransform_.scale_ = {2.0f, 2.0f, 2.0f}; // 細長い柱（つらら想定）
+	worldTransform_.scale_ = {5.0f, 8.0f, 5.0f}; // 細長い柱（つらら想定）
 	worldTransform_.UpdateMatrix(true);
 
 	hitGround_ = false;

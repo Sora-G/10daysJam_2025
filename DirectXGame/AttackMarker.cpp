@@ -19,7 +19,7 @@ void AttackMarker::Initialize(Model* markerModel, const Vector3& worldPos, float
 	wt_.Initialize();
 
 	// XY平面メッシュをXZに寝かせ、上向き(+Y)。モデルが既にXZなら 0.0f に。
-	wt_.rotation_.x = -kPI * 0.5f;
+	wt_.rotation_.x = -kPI * 1.0f;
 	wt_.rotation_.y = yawRad_;
 
 	wt_.translation_ = {worldPos_.x, worldPos_.y + yOffset_, worldPos_.z};
