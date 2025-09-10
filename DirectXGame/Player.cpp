@@ -30,7 +30,7 @@ void Player::InitHpBar(uint32_t whiteTex, const Vector2& size, const Vector3& wo
 }
 
 void Player::Update() {
-	gamePad_->Update(true);
+	gamePad_->Update(false);
 
 	// 無敵時間の更新
 	if (damageCooldown_ > 0.0f) {
