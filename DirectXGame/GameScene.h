@@ -62,7 +62,7 @@ private:
 	std::vector<std::unique_ptr<AttackMarker>> markers_;
 	std::vector<std::unique_ptr<FallingRock>> icicles_;
 
-	// 5秒間隔でスポーン
+	// 5秒間隔でスポーン//
 	float spawnTimer_ = 0.0f;
 
 	// 乱数//
