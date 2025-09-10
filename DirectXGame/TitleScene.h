@@ -1,6 +1,10 @@
 #pragma once
 #include "IScene.h"
 #include "GamePad.h"
+#include "KamataEngine.h"
+
+using namespace KamataEngine;
+
 class TitleScene : public IScene {
 public:
 	~TitleScene();							//解放処理
@@ -12,4 +16,10 @@ public:
 
 private:
 	GamePad* gamePad_;
+
+	uint32_t startTex = 0u;
+	Sprite* logo_ = nullptr;
+
+	uint32_t startString = 0u;
+	Sprite* string_ = nullptr;
 };
