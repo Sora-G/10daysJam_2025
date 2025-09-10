@@ -4,6 +4,10 @@
 #include <cassert>
 #include <cmath>
 
+std::random_device seedGenerator;
+std::mt19937 randomEngine(seedGenerator());
+std::uniform_real_distribution<float> distribution(-1.0f, 1.0f);
+
 // Windows の max/min マクロ対策
 #ifdef max
 #undef max
@@ -20,6 +24,12 @@ GameScene::~GameScene() {
 	delete player_;
 	delete playerCamera_;
 	delete skydome_;
+
+	delete modelBrast_;
+	for (BrastEffect* brast : brast_) {
+		delete brast;
+	}
+	brast_.clear();
 }
 
 void GameScene::Init() {
@@ -65,6 +75,20 @@ void GameScene::Init() {
 
 	// 初回マーカー
 	SpawnMarkerOnStage(3.0f);
+
+	modelBrast_ = Model::CreateFromOBJ("cube", false);
+
+	for (int i = 0; i < 50; i++) {
+		BrastEffect* brast = new BrastEffect();
+
+		Vector3 position = {0.0f, 0.0f, 0.0f};
+
+		brastVelocity = {distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)};
+
+		brast->Initialize(modelBrast_, position, brastVelocity);
+
+		brast_.push_back(brast);
+	}
 }
 
 void GameScene::SpawnMarkerOnStage(float warnSec) {
@@ -184,7 +208,40 @@ void GameScene::Update() {
 	// つらら更新
 	for (auto& i : icicles_) {
 		i->Update();
+#pragma region 弾けるエフェクト
+		if (i->IsConsumed() || i->HasHitGround()) {
+			for (int j = 0; j < 50; j++) {
+				BrastEffect* brast = new BrastEffect();
+
+				Vector3 position = i->GetPosition();
+
+				brastVelocity = {distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)};
+
+				brast->Initialize(modelBrast_, position, brastVelocity);
+
+				brast_.push_back(brast);
+			}
+		}
+#pragma endregion
 	}
+
+#pragma region 弾けるエフェクト
+	Normalize(brastVelocity);
+	brastVelocity *= distribution(randomEngine);
+	brastVelocity *= 0.1f;
+
+	brast_.remove_if([](BrastEffect* brast) {
+		if (brast->IsFinished()) {
+			delete brast;
+			return true;
+		}
+		return false;
+	});
+
+	for (BrastEffect* brast : brast_) {
+		brast->Update();
+	}
+#pragma endregion
 
 	// 当たり判定
 	ResolvePlayerIcicleCollisions();
@@ -211,6 +268,11 @@ void GameScene::DrawModel() {
 	}
 	for (auto& i : icicles_) {
 		i->Draw(camera_);
+	}
+	for (BrastEffect* brast : brast_) {
+		if (brast != nullptr) {
+			brast->Draw(camera_);
+		}
 	}
 	player_->Draw(camera_);
 	skydome_->Draw(camera_);

@@ -28,6 +28,8 @@
 #include <random>
 #include <vector>
 
+#include "BrastEffect.h"
+
 class GameScene : public IScene {
 public:
 	~GameScene() override;
@@ -73,6 +75,10 @@ private:
 
 	// 白1x1テクスチャ（頭上HPバー用）
 	uint32_t whiteTex_ = 0;
+
+	std::list<BrastEffect*> brast_;
+	Vector3 brastVelocity;
+	Model* modelBrast_ = nullptr;
 
 private:
 	// --- ヘルパ ---
