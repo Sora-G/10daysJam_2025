@@ -1,20 +1,22 @@
 #include "RuleScene1.h"
 
-RuleScene1::~RuleScene1() {
-	delete gamePad_;
-	gamePad_ = nullptr;
-}
+using namespace KamataEngine;
 
-void RuleScene1::Init() {}
+RuleScene1::~RuleScene1() { delete sprite_; }
+
+void RuleScene1::Init() {
+	ruleTexture_ = TextureManager::Load("ru-ru01.png");
+	sprite_ = Sprite::Create(ruleTexture_, {0.0f, 0.0f});
+}
 
 void RuleScene1::Update() {
 	// シーンをルール２に変更
-	if (gamePad_->GetButtonState().A == PUSH || gamePad_->GetButtonState().B == PUSH || gamePad_->GetButtonState().X == PUSH || gamePad_->GetButtonState().Y == PUSH) {
+	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
 		sceneNo_ = RULE2;
 	}
 }
 
-void RuleScene1::DrawBackGroundSprite() {}
+void RuleScene1::DrawBackGroundSprite() { sprite_->Draw(); }
 
 void RuleScene1::DrawForeGroundSprite() {}
 

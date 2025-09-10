@@ -1,6 +1,5 @@
 #pragma once
 #include "IScene.h"
-#include "GamePad.h"
 class RuleScene1 : public IScene {
 public:
 	~RuleScene1();                     // 解放処理
@@ -11,5 +10,6 @@ public:
 	void DrawModel() override;            // モデルの描画処理
 
 private:
-	GamePad* gamePad_;
+	uint32_t ruleTexture_;
+	KamataEngine::Sprite* sprite_;
 };

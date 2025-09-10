@@ -18,6 +18,7 @@ void GamePad::Update(bool isDebugView) {
 	// ゲームパッドが接続されている時にボタン、トリガー、スティックの入力を受け付ける
 	if (dwResult_ == ERROR_SUCCESS) {
 		InputStick();
+		InputButton();
 	}
 
 
