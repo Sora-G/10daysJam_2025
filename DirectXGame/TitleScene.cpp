@@ -11,7 +11,7 @@ void TitleScene::Init() {}
 
 void TitleScene::Update() {
 	//シーンをルール１に変更
-	if (Input::GetInstance()->PushKey(DIK_SPACE)) {
+	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
 		sceneNo_ = RULE1;
 	}
 }
