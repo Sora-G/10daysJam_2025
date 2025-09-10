@@ -1,14 +1,17 @@
 #include "TitleScene.h"
 
-TitleScene::~TitleScene() {}
+TitleScene::~TitleScene() {
+	delete gamePad_;
+	gamePad_ = nullptr;
+}
 
 void TitleScene::Init() {}
 
 void TitleScene::Update() {
 	//シーンをルール１に変更
-	//if () {
-	//	sceneNo_ = RULE1;
-	//}
+	if (gamePad_->GetButtonState().A == PUSH || gamePad_->GetButtonState().B == PUSH || gamePad_->GetButtonState().X == PUSH || gamePad_->GetButtonState().Y == PUSH) {
+		sceneNo_ = RULE1;
+	}
 }
 
 void TitleScene::DrawBackGroundSprite() {}

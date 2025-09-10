@@ -1,5 +1,6 @@
 #pragma once
 #include "IScene.h"
+#include "GamePad.h"
 class TitleScene : public IScene {
 public:
 	~TitleScene();							//解放処理
@@ -10,4 +11,5 @@ public:
 	void DrawModel() override;				//モデルの描画処理
 
 private:
+	GamePad* gamePad_;
 };

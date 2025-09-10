@@ -1,6 +1,27 @@
 #pragma once
 #include "KamataEngine.h"
 
+// ボタンの入力状態
+enum ButtonInputState {
+	NONE, // 離している
+	PUSH, // 押した瞬間
+	PRESS // 押している
+};
+
+// 各ボタンの情報をまとめた構造体
+typedef struct {
+	ButtonInputState A;     // Aボタン
+	ButtonInputState B;     // Bボタン
+	ButtonInputState X;     // Xボタン
+	ButtonInputState Y;     // Yボタン
+	ButtonInputState UP;    // 上方向ボタン
+	ButtonInputState RIGHT; // 右方向ボタン
+	ButtonInputState DOWN;  // 下方向ボタン
+	ButtonInputState LEFT;  // 左方向ボタン
+	ButtonInputState RS;    // RSボタン
+	ButtonInputState LS;    // LSボタン
+} Button;
+
 // 各スティックの情報をまとめた構造体
 typedef struct {
 	short x;        // X軸の位置
@@ -19,6 +40,11 @@ public:
 	void InputStick();
 
 	/// <summary>
+	/// ボタンの入力処理
+	/// </summary>
+	void InputButton();
+
+	/// <summary>
 	/// スティックのデッドゾーンを設定する関数
 	/// </summary>
 	short ApplyStickDeadZone(short value, short deadZone);
@@ -27,6 +53,9 @@ public:
 	KamataEngine::Vector2 GetLeftStickState() { return leftStickNorm_; }
 	// 右のスティックの情報を受け取る関数
 	KamataEngine::Vector2 GetRightStickState() { return rightStickNorm_; }
+
+	// 各ボタンの状態を受け取る関数
+	Button GetButtonState() { return button_; }
 
 	const int kStickDeadZoneMax = 32767; // スティックのデッドゾーン最大値
 	const int kTriggerDeadZoneMax = 255; // トリガーのデッドゾーン最大値
@@ -40,6 +69,8 @@ private:
 
 	Stick rightStick_, leftStick_;         // 左右のスティックの情報
 	KamataEngine::Vector2 rightStickNorm_, leftStickNorm_; // 左右のスティックの入力値(0~1)
+
+	Button button_; // 各ボタンの情報
 
 	bool isDebugView_ = false;//ImGuiを描画するか
 };
