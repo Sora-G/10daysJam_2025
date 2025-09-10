@@ -1,5 +1,9 @@
 #pragma once
 #include "IScene.h"
+#include "KamataEngine.h"
+
+using namespace KamataEngine;
+
 class GameOverScene : public IScene {
 public:
 	~GameOverScene();                    // 解放処理
@@ -10,4 +14,6 @@ public:
 	void DrawModel() override;            // モデルの描画処理
 
 private:
+	uint32_t overTex = 0u;
+	Sprite* logo_ = nullptr;
 };
