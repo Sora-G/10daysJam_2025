@@ -24,12 +24,10 @@ void GamePad::Update(bool isDebugView) {
 
 
 	isDebugView_ = isDebugView;
-	if (isDebugView_ == true) {
-		// ImGuiデバッグ
-		ImGui::SetNextWindowSize(ImVec2(200, 300), 1);
+	
 		
 	}
-}
+
 
 void GamePad::InputStick() {
 	// スティックのX,Y軸の状態を計算

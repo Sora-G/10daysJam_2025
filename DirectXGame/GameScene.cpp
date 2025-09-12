@@ -137,7 +137,7 @@ void GameScene::Init() {
 
 		Vector3 position = {0.0f, 0.0f, 0.0f};
 
-		brastVelocity = {distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)};
+		//brastVelocity = {distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)};
 
 		brast->Initialize(modelBrast_, position, brastVelocity);
 

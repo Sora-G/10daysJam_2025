@@ -1,27 +1,33 @@
+// SceneManager.h
 #pragma once
+#include <array>
 #include <memory>
-#include "KamataEngine.h"
+
 #include "IScene.h"
+#include "KamataEngine.h"
+
+// 利用するシーンのヘッダ
 #include "DevelopScene.h"
-#include "TitleScene.h"
-#include "RuleScene1.h"
-#include "RuleScene2.h"
-#include "GameScene.h"
 #include "GameClearScene.h"
 #include "GameOverScene.h"
+#include "GameScene.h"
+#include "RuleScene1.h"
+#include "RuleScene2.h"
+#include "TitleScene.h"
+
+// ※ IScene 側で enum { DEVELOP, TITLE, RULE1, RULE2, GAME, GAME_CLEAR, GAME_OVER } を想定
 
 class SceneManager {
 private:
-	//シーンを保持するメンバ変数
-	std::unique_ptr<IScene> sceneArr_[7];
+	static constexpr int kSceneCount = 7; // 0..6
+	std::array<std::unique_ptr<IScene>, kSceneCount> sceneArr_{};
 
-	//どのシーンを呼び出すのか管理する変数
-	int currentSceneNo_; //現在のシーン
-	int prevSceneNo_;    //前のシーン
+	int currentSceneNo_; // 現在のシーン
+	int prevSceneNo_;    // 前回のシーン
 
 public:
-	SceneManager();  //コンストラクタ
-	~SceneManager(); //デストラクタ
+	SceneManager();
+	~SceneManager();
 
-	int Run(); //ゲームループを呼び出す関数
+	int Run();
 };

@@ -53,10 +53,7 @@ void Player::Update() {
 
 	// ===== マウスで視点（Yaw）回転：常時 =====
 	{
-		ImGuiIO& io = ImGui::GetIO();
-		if (!io.WantCaptureMouse) {
-			yawRad_ += io.MouseDelta.x * kMouseYawSensitivity_;
-		}
+		
 	}
 	worldTransform_.rotation_.y = yawRad_;
 

@@ -1,5 +1,6 @@
 #include "BrastEffect.h"
 #include "Easing.h"
+#include <cassert>
 
 using namespace MathUtility;
 

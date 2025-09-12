@@ -15,6 +15,9 @@ void GameOverScene::Init() {
 	input_ = Input::GetInstance();
 	imguiMgr_ = ImGuiManager::GetInstance();
 
+	overTex = TextureManager::Load("./Resources/gameOverTex.png");
+	logo_ = Sprite::Create(overTex, {0, 0});
+
 	// �w�i�摜�ǂݍ��݁i./Resources/gameover.png �z��j
 	texGameOver_ = TextureManager::Load("./Resources/gameOver.png");
 	sprGameOver_ = Sprite::Create(texGameOver_, {0.0f, 0.0f});
@@ -37,11 +40,6 @@ void GameOverScene::Update() {
 	} else if (input_->TriggerKey(DIK_R)) {
 		sceneNo_ = GAME;
 	}
-
-void GameOverScene::Init() {
-	overTex = TextureManager::Load("./Resources/gameOverTex.png");
-	logo_ = Sprite::Create(overTex, {0, 0});
-}
 	
 }
 
@@ -56,13 +54,12 @@ void GameOverScene::DrawModel() {
 void GameOverScene::DrawForeGroundSprite() {
 	ID3D12GraphicsCommandList* cl = dxCommon_->GetCommandList();
 	Sprite::PreDraw(cl);
-
+logo_->Draw();
 	if (sprGameOver_) {
 		sprGameOver_->Draw();
 	}
 
 	Sprite::PostDraw();
-void GameOverScene::DrawForeGroundSprite() { logo_->Draw(); }
 
 	// ImGui �̕`��
 	imguiMgr_->Draw();

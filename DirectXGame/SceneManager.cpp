@@ -1,88 +1,91 @@
+// SceneManager.cpp
 #include "SceneManager.h"
 
 using namespace KamataEngine;
 
 SceneManager::SceneManager() {
-	//各シーンの配列
-	//配列にシーンを追加する方法は ↓ に書いてあるコードを書く
-	//sceneArr_[n] = std::make_unique<シーンのクラス名>();
-	//追加する時はヘッダーで宣言した"sceneArr_"の[]の数値を増やすこと
+	// enum と添字の対応を必ず一致させる
+	sceneArr_[DEVELOP] = std::make_unique<DevelopScene>();
+	sceneArr_[TITLE] = std::make_unique<TitleScene>();
+	sceneArr_[RULE1] = std::make_unique<RuleScene1>();
+	sceneArr_[RULE2] = std::make_unique<RuleScene2>();
+	sceneArr_[GAME] = std::make_unique<GameScene>();
+	sceneArr_[GAME_CLEAR] = std::make_unique<GameClearScene>();
+	sceneArr_[GAME_OVER] = std::make_unique<GameOverScene>();
 
-	sceneArr_[0] = std::make_unique<DevelopScene>();
-	sceneArr_[1] = std::make_unique<TitleScene>();
-	sceneArr_[2] = std::make_unique<RuleScene1>();
-	sceneArr_[3] = std::make_unique<RuleScene2>();
-	sceneArr_[4] = std::make_unique<GameScene>();
-	sceneArr_[5] = std::make_unique<GameClearScene>();
-	sceneArr_[5] = std::make_unique<GameOverScene>();
-
-	// 初期シーンの設定
 	currentSceneNo_ = DEVELOP;
+	prevSceneNo_ = currentSceneNo_;
 }
 
 SceneManager::~SceneManager() {}
 
 int SceneManager::Run() {
-	// Engineの初期化
+	// --- 初期化 ---
 	KamataEngine::Initialize(L"3044_マグマグパニック");
-	// DirectXCommonのInstanceを取得
-	KamataEngine::DirectXCommon* dxCommon = KamataEngine::DirectXCommon::GetInstance();
+	DirectXCommon* dxCommon = DirectXCommon::GetInstance();
 
-	sceneArr_[currentSceneNo_]->Init();
+	auto getScene = [&](int id) -> IScene* {
+		if (id < 0 || id >= kSceneCount)
+			return nullptr;
+		return sceneArr_[static_cast<size_t>(id)].get();
+	};
 
-	// メインループ
+	IScene* cur = getScene(currentSceneNo_);
+	if (!cur) {
+		currentSceneNo_ = GAME; // フォールバック
+		sceneArr_[GAME] = std::make_unique<GameScene>();
+		cur = sceneArr_[GAME].get();
+	}
+	cur->Init();
+
+	// --- メインループ ---
 	while (true) {
-		// Engineの更新
-		if (KamataEngine::Update()) {
+		if (KamataEngine::Update())
 			break;
-		}
 
-		// シーンのチェック
+		// 更新
+		cur->Update();
+
+		// 遷移チェック
 		prevSceneNo_ = currentSceneNo_;
-		currentSceneNo_ = sceneArr_[currentSceneNo_]->GetSceneNo();
+		currentSceneNo_ = cur->GetSceneNo();
 
-		// シーン変更のチェック
 		if (prevSceneNo_ != currentSceneNo_) {
-			// 現在のシーンの初期化処理
-			sceneArr_[currentSceneNo_]->Init();
+			IScene* next = getScene(currentSceneNo_);
+			if (!next) {
+				// 万一未設定・範囲外なら GAME へ
+				currentSceneNo_ = GAME;
+				sceneArr_[GAME] = std::make_unique<GameScene>();
+				next = sceneArr_[GAME].get();
+			}
+			next->Init();
+			cur = next;
 		}
 
-
-		// 現在のシーンの更新処理
-		sceneArr_[currentSceneNo_]->Update();
-
-
-		//描画開始処理
+		// --- 描画 ---
 		dxCommon->PreDraw();
 
-		//現在シーンの背景の描画処理
 		Sprite::PreDraw();
-		sceneArr_[currentSceneNo_]->DrawBackGroundSprite();
+		cur->DrawBackGroundSprite();
 		Sprite::PostDraw();
 
-		//深度バッファをクリア
 		dxCommon->ClearDepthBuffer();
-
-		//現在シーンのモデルの描画処理
 		Model::PreDraw();
-		sceneArr_[currentSceneNo_]->DrawModel();
+		cur->DrawModel();
 		Model::PostDraw();
 
-		//現在シーンの近景の描画処理
 		Sprite::PreDraw();
-		sceneArr_[currentSceneNo_]->DrawForeGroundSprite();
+		cur->DrawForeGroundSprite();
 		Sprite::PostDraw();
 
-		//描画終了処理
 		dxCommon->PostDraw();
 
-		//escキーでウィンドウを閉じる
-		if (KamataEngine::Input::GetInstance()->PushKey(DIK_ESCAPE)) {
+		// ESC で終了
+		if (Input::GetInstance()->PushKey(DIK_ESCAPE))
 			break;
-		}
 	}
-	// Engineの終了処理
-	KamataEngine::Finalize();
 
+	// --- 終了 ---
+	KamataEngine::Finalize();
 	return 0;
 }

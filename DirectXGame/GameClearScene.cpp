@@ -4,10 +4,7 @@
 
 using namespace KamataEngine;
 
-void GameClearScene::Init() {
-	clearTex = TextureManager::Load("./Resources/clearTex.png");
-	logo_ = Sprite::Create(clearTex, {0, 0});
-}
+
 GameClearScene::~GameClearScene() {
 	delete clearSprite_;
 	clearSprite_ = nullptr;
@@ -38,7 +35,6 @@ void GameClearScene::Update() {
 
 void GameClearScene::DrawBackGroundSprite() {}
 
-void GameClearScene::DrawForeGroundSprite() { logo_->Draw(); }
 void GameClearScene::DrawModel() {}
 
 void GameClearScene::DrawForeGroundSprite() {
