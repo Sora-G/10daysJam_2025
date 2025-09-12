@@ -1,7 +1,6 @@
 // Player.cpp
 #include "Player.h"
 #include "MathUtilityForText.h"
-#include <imgui.h> // マウスのデルタ取得（ImGui::GetIO().MouseDelta）
 
 using namespace KamataEngine;
 
@@ -12,7 +11,7 @@ Player::~Player() {
 
 void Player::Init() {
 	worldTransform_.Initialize();
-	worldTransform_.translation_ = {0.0f, 5.0f, 0.0f}; // 初期はとりあえず 5
+	worldTransform_.translation_ = {0.0f, 5.0f, 0.0f}; // とりあえず 5
 	worldTransform_.rotation_ = {0.0f, 0.0f, 0.0f};
 	worldTransform_.UpdateMatrix(true);
 
@@ -29,6 +28,10 @@ void Player::Init() {
 	onGround_ = true;
 
 	yawRad_ = worldTransform_.rotation_.y;
+
+	// マウス初期化
+	firstMouse_ = true;
+	lastMouse_.x = lastMouse_.y = 0;
 }
 
 void Player::InitHpBar(uint32_t whiteTex, const Vector2& size, const Vector3& worldOffset) {
@@ -51,9 +54,27 @@ void Player::Update() {
 			damageCooldown_ = 0.0f;
 	}
 
-	// ===== マウスで視点（Yaw）回転：常時 =====
+	// ===== マウスで視点（Yaw）回転：常時（ImGui 非依存） =====
 	{
-		
+		POINT p;
+		if (GetCursorPos(&p)) {
+			if (firstMouse_) {
+				lastMouse_ = p;
+				firstMouse_ = false;
+			}
+			int dx = p.x - lastMouse_.x; // 右へ動かすと +（右回転）
+			// 左右逆にしたい場合は dx にマイナスを掛ける
+			yawRad_ += static_cast<float>(dx) * kMouseYawSensitivity_;
+
+			// 値が発散しないよう軽くラップ
+			constexpr float PI = 3.1415926535f;
+			if (yawRad_ > PI)
+				yawRad_ -= 2.0f * PI;
+			if (yawRad_ < -PI)
+				yawRad_ += 2.0f * PI;
+
+			lastMouse_ = p;
+		}
 	}
 	worldTransform_.rotation_.y = yawRad_;
 

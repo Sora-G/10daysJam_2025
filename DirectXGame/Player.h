@@ -4,6 +4,7 @@
 #include "GamePad.h"
 #include "HpBar.h"
 #include "KamataEngine.h"
+#include <Windows.h> // マウス座標取得に使用
 #include <algorithm>
 #include <input/Input.h> // キーボード入力
 #include <memory>
@@ -111,4 +112,8 @@ private:
 	// ===== マウス視点（Yaw） =====
 	float yawRad_ = 0.0f;                                   // 現在の向き（Y回転）
 	static constexpr float kMouseYawSensitivity_ = 0.0035f; // ラジアン/ピクセル
+
+	// マウス差分計算用（ImGui 非依存）
+	bool firstMouse_ = true;
+	POINT lastMouse_; // 前フレームのマウス座標（スクリーン座標）
 };
